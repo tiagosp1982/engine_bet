@@ -1,0 +1,48 @@
+from engine_bet.module.external.api.updater import updater
+from engine_bet.module.bet.repositories.bet_repository import bet_repository
+from engine_bet.module.bet.repositories.contest_repository import contest_repository
+from engine_bet.module.bet.dtos.contest_dto import ContestDto
+from engine_bet.module.bet.dtos.raffle_dto import RaffleDto
+from engine_bet.module.importer.dtos.update_raffle_dto import UpdateRaffleDto
+from time import sleep
+
+
+async def update_raffle_all() -> dict:
+    list_update_raffle = []
+    try:
+        list_type_bet = bet_repository.read_type_bet()
+        for item in list_type_bet.list_type_bet_dto:
+            concurso_base = item.nr_concurso_max
+            valida_concurso = updater.list_result_external(item.nm_route, None)
+            ultimo_concurso = valida_concurso["numero"]
+            while concurso_base <= ultimo_concurso:
+                result = updater.list_result_external(item.nm_route, concurso_base)
+                if (result == None):
+                    sleep(60)
+                    result = updater.list_result_external(item.nm_route, concurso_base)
+
+                # dados do concurso
+                valor = result["valorEstimadoProximoConcurso"]
+                data = result["dataApuracao"]
+                numero_concurso = result["numero"]
+                data_proximo_concurso = result["dataProximoConcurso"]
+                numero_proximo_concurso = result["numeroConcursoProximo"]
+                ganhador = result["listaRateioPremio"][0]["numeroDeGanhadores"]
+                id = item.id_tipo_jogo
+                objContest = ContestDto(id, numero_concurso, data, valor, numero_proximo_concurso, data_proximo_concurso, ganhador)
+                contest_repository.write_data_contest(objContest)
+
+                # dados do resultados
+                dezenas = result["listaDezenas"]
+                objRaffle = RaffleDto.factoryAny(id, numero_concurso, dezenas)
+                contest_repository.write_data_raffle(objRaffle)
+                contest_repository.update_cicle_data(id)
+
+                obj = UpdateRaffleDto(nm_tipo_jogo = item.nm_tipo_jogo, nr_concurso=numero_concurso, bl_importado=True)
+                list_update_raffle.append(obj)
+                concurso_base += 1
+                print(f"Importado concurso: {numero_concurso}")
+
+        return list_update_raffle
+    except:
+        return list_update_raffle[{"Erro": "Ocorreu um erro na atualização"}]

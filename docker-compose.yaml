@@ -1,0 +1,34 @@
+version: '3.9'
+networks:
+  dem:
+services:
+  db:
+    image: postgres_image_dbtarget
+    command: postgres -c datestyle='iso, dmy'
+    build: ./engine_bet/infrastructure/database/
+    restart: always
+    environment:
+      POSTGRES_DB: dbTarget
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: F4milia_2023_
+    volumes:
+      - /engine_bet/infrastructure/database/dbTarget.sql /docker-entrypoint-initdb.d/
+    ports:
+      - "7543:5432"
+    networks:
+      - dem
+  web:
+    build: .
+    command: uvicorn engine_bet.api.controller.view_bet:app --host 0.0.0.0 --port 8000
+    environment:
+      POSTGRES_DB: dbTarget
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: F4milia_2023_
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - dem

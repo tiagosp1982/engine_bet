@@ -1,0 +1,1 @@
+C:\Program Files\PostgreSQL\15\bin> pg_dump -U postgres -h localhost -p 5432 dbTarget > C:\Tiago\dbTarget.sql

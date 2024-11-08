@@ -6,3 +6,7 @@ pydantic
 urllib3
 requests
 numpy
+pandas
+matplotlib
+seaborn
+scipy

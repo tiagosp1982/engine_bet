@@ -4,8 +4,8 @@ import numpy as np
 def __init__(cls):
         pass
 
-async def confer_bet_detail(betInput) -> dict:
-    sorteios = bet_repository.read_data_bet()
+async def confer_bet_detail(id_type_bet: int, betInput: str) -> dict:
+    sorteios = bet_repository.read_data_bet(id_type_bet)
     lista_resultado = []
 
     aposta = betInput.split(',')
@@ -17,9 +17,9 @@ async def confer_bet_detail(betInput) -> dict:
     
     return lista_resultado
 
-async def confer_bet_total(betInput) -> dict:
-    sorteios = bet_repository.read_data_bet()
-    premiacoes = bet_repository.read_type_bet_prize_amount()
+async def confer_bet_total(id_type_bet: int, betInput: str) -> dict:
+    sorteios = bet_repository.read_data_bet(id_type_bet)
+    premiacoes = bet_repository.read_type_bet_prize_amount(id_type_bet)
     lista_resultado = []
     lista_total = []
 
@@ -41,9 +41,9 @@ async def confer_bet_total(betInput) -> dict:
     return lista_total
        
 
-def frequency() -> dict: 
+def frequency(type_bet: int) -> dict: 
     freq = {}
-    my_list = bet_repository.read_raffle()
+    my_list = bet_repository.read_raffle(type_bet)
     
     for item in np.unique(np.array(my_list)):
          freq[item] = np.where(np.array(my_list)==item)[0].shape[0]

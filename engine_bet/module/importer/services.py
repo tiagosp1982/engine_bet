@@ -7,10 +7,10 @@ from engine_bet.module.importer.dtos.update_raffle_dto import UpdateRaffleDto
 from time import sleep
 
 
-async def update_raffle_all() -> dict:
+async def update_raffle_all(_tipo_jogo: int) -> dict:
     list_update_raffle = []
     try:
-        list_type_bet = bet_repository.read_type_bet()
+        list_type_bet = bet_repository.read_type_bet(_tipo_jogo)
         for item in list_type_bet.list_type_bet_dto:
             concurso_base = item.nr_concurso_max
             valida_concurso = updater.list_result_external(item.nm_route, None)

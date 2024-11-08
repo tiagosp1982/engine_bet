@@ -19,7 +19,7 @@ class bet_repository:
         raffle = conector.read_data("SELECT nr_sorteado FROM sorteio ORDER BY 1")
         return raffle
     
-    def read_type_bet() -> dict:
+    def read_type_bet(id_type_bet: int) -> dict:
         types_bet = conector.read_data(f"""SELECT t.*
                                                 , COALESCE(c.nr_concurso_max,0) + 1 AS nr_concurso_max
                                              FROM public.tipo_jogo t
@@ -27,7 +27,8 @@ class bet_repository:
 				                                                   , id_tipo_jogo
 				                                                FROM concurso
 				                                               GROUP BY id_tipo_jogo
-				                                            ) c ON c.id_tipo_jogo = t.id_tipo_jogo"""
+				                                            ) c ON c.id_tipo_jogo = t.id_tipo_jogo
+                                            WHERE t.id_tipo_jogo={id_type_bet}"""
                                       )
         if (types_bet == None):
             return None

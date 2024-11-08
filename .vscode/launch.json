@@ -5,12 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "MyTarget",
-            "type": "python",
+            "name": "FastAPI",
+            "type": "debugpy",
             "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal",
-            "justMyCode": false
+            "module": "uvicorn",
+            "args": [
+                "engine_bet.api.controller.view_bet:app",
+                "--reload"
+            ],
+            "jinja": true
         }
     ]
 }

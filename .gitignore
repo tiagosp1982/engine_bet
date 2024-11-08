@@ -1,5 +1,82 @@
-# Inclui todos os arquivos de texto
-*.txt
+# Bytecode do Python
+__pycache__/
+*.py[cod]
+*$py.class
 
-# Inclui todos os arquivos pyc
-*.pyc
+# Ambiente Virtual
+venv/
+env/
+ENV/
+.venv/
+.ENV/
+pipenv/
+Pipfile.lock
+
+# Arquivos de Configuração de Pacotes
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+
+# Arquivos de Log
+*.log
+*.txt
+*.out
+
+# Cache do Pytest
+.pytest_cache/
+.cache/
+.coverage
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Arquivos de Configuração de Ferramentas
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+
+# Arquivos de configuração de IDEs
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Arquivos do Jupyter Notebook
+.ipynb_checkpoints/
+
+# Configurações de Sistema Operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos temporários
+*.tmp
+*.temp
+*.bak
+~$*
+
+# Arquivo de Configuração do Poetry
+poetry.lock
+
+# Dependências geradas
+*.pkl
+*.h5
+*.csv
+*.db
+*.sqlite3
+*.tar.gz
+*.zip
+
+# Arquivos de configuração de containers
+docker-compose.yml
+Dockerfile
+
+# Arquivo .env
+.env
+
+# Arquivos de output de testes e dados gerados
+outputs/

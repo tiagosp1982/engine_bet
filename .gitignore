@@ -1,0 +1,5 @@
+# Inclui todos os arquivos de texto
+*.txt
+
+# Inclui todos os arquivos pyc
+*.pyc

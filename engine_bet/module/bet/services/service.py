@@ -1,5 +1,8 @@
+from engine_bet.module.bet.dtos.raffle_dto import RaffleDto
 from engine_bet.module.bet.repositories.bet_repository import bet_repository
 import numpy as np
+
+from engine_bet.module.bet.repositories.raffle_repository import raffle_repository
 
 def __init__(cls):
         pass
@@ -39,13 +42,13 @@ async def confer_bet_total(id_type_bet: int, betInput: str) -> dict:
             lista_total.append({"Dezenas": prm, "Acertos": 0})
     
     return lista_total
-       
 
-def frequency(type_bet: int) -> dict: 
-    freq = {}
-    my_list = bet_repository.read_raffle(type_bet)
+def raffle_by_id(id_type_bet: int, cicle: bool) -> dict:
+    if (cicle):
+        raffle = raffle_repository.read_raffle_by_cicle(id_type_bet)
+        if (raffle == None):
+            raffle = raffle_repository.read_raffle(id_type_bet)
+    else:
+        raffle = raffle_repository.read_raffle(id_type_bet)
     
-    for item in np.unique(np.array(my_list)):
-         freq[item] = np.where(np.array(my_list)==item)[0].shape[0]
-
-    return freq
+    return RaffleDto.factory(id_type_bet, raffle)

@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-SQLAlchemy
-psycopg2-binary
-python-dotenv
-pydantic
-urllib3
-requests
-numpy

@@ -1,3 +1,0 @@
-docker build -t postgres_image_dbtarget .
-docker run --name postgres_dbtarget -d -p 7543:5432 postgres_image_dbtarget
-

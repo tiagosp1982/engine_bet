@@ -3,14 +3,14 @@ from pydantic import BaseModel
 
 
 class CalculateDTO(BaseModel):
-    NrDezena: Optional[int]
+    NrDezena: Optional[int] = None
 
-    QtAusenciaRecente: Optional[int]
+    QtAusenciaRecente: Optional[int] = None
 
-    QtAusenciaTotal: Optional[int]
+    QtAusenciaTotal: Optional[int] = None
 
-    QtRepeticaoRecente: Optional[int]
+    QtRepeticaoRecente: Optional[int] = None
 
-    QtRepeticaoTotal: Optional[int]
+    QtRepeticaoTotal: Optional[int] = None
 
-    VlProbabilidade: Optional[float]
+    VlProbabilidade: Optional[float] = None

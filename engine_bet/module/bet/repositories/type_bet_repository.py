@@ -28,11 +28,11 @@ class type_bet_repository:
     
     def read_type_bet_structure(id_type_bet:int) -> TypeBetStructureDTO:
         response = conector.read_data(f"""SELECT id_tipo_jogo
-                                                , nr_estrutura_jogo
-                                             FROM tipo_jogo_estrutura 
-                                            WHERE id_tipo_jogo={id_type_bet}
-                                            ORDER BY nr_estrutura_jogo"""
-                                      )
+                                               , nr_estrutura_jogo
+                                            FROM tipo_jogo_estrutura 
+                                           WHERE id_tipo_jogo={id_type_bet}
+                                           ORDER BY nr_estrutura_jogo"""
+                                     )
         if (response == None):
             return None
 

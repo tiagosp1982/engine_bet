@@ -6,11 +6,12 @@ from engine_bet.module.bet.dtos.raffle_dto import RaffleDto
 from engine_bet.module.bet.dtos.type_bet_dto import TypeBetDto
 from engine_bet.module.bet.dtos.type_bet_structure import TypeBetStructureDTO
 from engine_bet.module.bet.repositories.type_bet_repository import type_bet_repository
-from engine_bet.module.bet.services.service import raffle_by_id
+from engine_bet.module.bet.services.service import generate_new_bet, get_result_bet, raffle_by_id
 
 
 id = 1
-qtde_dezena_jogo = 18
+qtde_aposta = 25
+qtde_dezena_jogo = 15
 tipo_jogo_estrutura: TypeBetStructureDTO
 tipo_jogo: TypeBetDto
 tipo_jogo_estrutura = type_bet_repository.read_type_bet_structure(id)
@@ -27,9 +28,6 @@ numeros_possiveis = list(range(1, numeros_total + 1))
 
 filtrar_ausente = False
 dezenas_filtrar = 0
-if ((numeros_total / 2) > tipo_jogo.qt_dezena_minima_aposta):
-    filtrar_ausente = True
-
 resultado_anterior = ""
 total_repetido = 0
 for s in sorteios:
@@ -37,6 +35,9 @@ for s in sorteios:
         total_repetido += len(set(s) & set(resultado_anterior))
     resultado_anterior = s
 dezenas_filtrar = int((total_repetido / n_sorteios).__round__(0))
+
+if ((numeros_total / 2) > tipo_jogo.qt_dezena_minima_aposta):
+    filtrar_ausente = True
 
 qtde_adicional_ausente = 0
 qtde_adicional_repetido = 0
@@ -117,27 +118,23 @@ for item in tipo_jogo_estrutura:
             VlProbabilidade=(100-(prob)-qtde_repeticao_recente)
             )
     )
-print(calculos)
-# ausente = list(filter(lambda c: c.QtAusenciaRecente > 0, calculos))
-ausente = [c for c in calculos if c.QtAusenciaRecente > 0]
-ausente = [a.NrDezena for a in ausente]
-random.shuffle(ausente)
+    
+qt_filtrar_ausente=(tipo_jogo.qt_dezena_minima_aposta-dezenas_filtrar)+qtde_adicional_ausente
+qt_filtrar_repetido=(dezenas_filtrar+qtde_adicional_repetido)
+for i in range(qtde_aposta):
+    jogo_invalido = True
+    while jogo_invalido:
+        jogo = generate_new_bet(calculos=list(calculos),
+                                qtde_filtrar_ausente=qt_filtrar_ausente,
+                                qtde_filtrar_repetido=qt_filtrar_repetido,
+                                filtrar_ausente=filtrar_ausente,
+                                dezenas_filtrar=dezenas_filtrar
+                                )
+        # jogo_str = ",".join(jogo)
+        jogo_invalido = get_result_bet(id_type_bet=id,
+                                       bets=",".join(map(str, jogo)),
+                                       validate_winning_bet=True)
+    print(jogo)
 
-# repeticao = list(filter(lambda c: c.QtAusenciaRecente == 0 and c.QtRepeticaoRecente > 0 and c.QtRepeticaoRecente <= dezenas_filtrar, calculos))
-repeticao = [c for c in calculos if c.QtAusenciaRecente == 0 and c.QtRepeticaoRecente > 0 and c.QtRepeticaoRecente <= dezenas_filtrar]
-repeticao = sorted(repeticao, key=lambda p: p.QtRepeticaoRecente and p.VlProbabilidade, reverse=True)
-repeticao = [a.NrDezena for a in repeticao]
-random.shuffle(repeticao)
-
-if (filtrar_ausente):
-    jogo_ausente = random.sample(ausente, k=(tipo_jogo.qt_dezena_minima_aposta-dezenas_filtrar)+qtde_adicional_ausente)
-    jogo_repeticao = random.sample(repeticao, k=dezenas_filtrar+qtde_adicional_repetido)
-else:
-    # verificar
-    jogo_ausente = random.sample(ausente, k=(tipo_jogo.qt_dezena_minima_aposta-dezenas_filtrar)+qtde_adicional_ausente)
-    jogo_repeticao = random.sample(repeticao, k=dezenas_filtrar+qtde_adicional_repetido)
-
-jogo = sorted(jogo_ausente + jogo_repeticao)
-print(jogo)
     
             

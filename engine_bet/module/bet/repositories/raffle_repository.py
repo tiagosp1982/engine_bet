@@ -22,7 +22,7 @@ class raffle_repository:
                                    )
         return raffle
 
-    def read_raffle(id_type_bet: int) -> dict:
+    def read_raffle(id_type_bet: int, limit_data: int) -> dict:
         raffle = conector.read_data(f"""SELECT s.nr_concurso
                                              , s.nr_sorteado 
                                           FROM sorteio s
@@ -30,7 +30,7 @@ class raffle_repository:
                                                               from concurso c
                                                              where c.id_tipo_jogo = {id_type_bet}
                                                              order by c.nr_concurso desc
-                                                             limit 20
+                                                             limit {limit_data}
                                                           ) t on t.nr_concurso = s.nr_concurso
                                          WHERE s.id_tipo_jogo={id_type_bet}
                                          ORDER BY s.nr_concurso DESC

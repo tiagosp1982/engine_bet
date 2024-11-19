@@ -1,6 +1,7 @@
 from atexit import register
 
 from engine_bet.infrastructure.database.conector import conector
+from engine_bet.module.bet.dtos.tipo_jogo_premiacao_dto import TipoJogoPremiacaoDto
 from engine_bet.module.bet.dtos.type_bet_dto import TypeBetDto
 from engine_bet.module.bet.dtos.type_bet_structure import TypeBetStructureDTO
 
@@ -38,3 +39,19 @@ class type_bet_repository:
 
         return [TypeBetStructureDTO(id_tipo_jogo=res[0],
                                     nr_estrutura_jogo=res[1]) for res in response]
+
+    def read_type_bet_award(id_type_bet:int) -> TipoJogoPremiacaoDto:
+        obj: TipoJogoPremiacaoDto
+        response = conector.read_data(f"""SELECT id_tipo_jogo 
+                                               , min(qt_dezena_acerto) as qt_dezena_acerto
+                                            FROM tipo_jogo_premiacao tjp 
+                                           WHERE id_tipo_jogo = {id_type_bet}
+                                             AND ind_valor_variavel = '0'
+                                           GROUP BY id_tipo_jogo"""
+                                     )
+        if (response == None):
+            return None
+
+        obj = [TipoJogoPremiacaoDto(id_tipo_jogo=res[0],
+                                    qt_dezena_acerto=res[1]) for res in response]
+        return obj[0]

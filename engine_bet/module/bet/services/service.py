@@ -71,7 +71,7 @@ def generate_new_bet(calculos: list[CalculateDTO],
 def get_result_bet(id_type_bet: int,
                    bets: str,
                    valida_jogos: bool = False,
-                   bet_simulation_result: list = None,
+                #    bet_simulation_result: list = None,
                    qtde_maxima_repetida_simulacao_resultado: int = None,
                    desvio_medio: float = None,
                    sempre_amarrar_jogos: bool = False,
@@ -82,7 +82,6 @@ def get_result_bet(id_type_bet: int,
     sorteios = bet_repository.read_data_bet(id_type_bet)
     premiacoes = bet_repository.read_type_bet_prize_amount(id_type_bet)
     lista_resultado = []
-    lista_resultado_adicional = []
     lista_simulado = []
     lista_total = []
     aposta = bets.split(',')
@@ -131,26 +130,10 @@ def get_result_bet(id_type_bet: int,
                 acerto_jogo_adicional = [s for s in lista_simulado if s > qtde_maxima_repetida_simulacao_resultado]
                 resultado = (len(acerto_jogo_adicional) > 0)
 
-            if (resultado):
-                return True
+            return resultado
+        else:
+            return False
 
-        # Verifica se existe um jogo extra para usar como comparação ao jogo gerado
-        if (bet_simulation_result):
-            combinacoes = list(combinations(bet_simulation_result, tipo_jogo.qt_dezena_resultado))
-            for combinacao in combinacoes:
-                resultado = [elemento for elemento in aposta if elemento in combinacao]
-                lista_resultado_adicional.append(len(resultado))
-
-            # Valida as combinações dos jogos extras
-            if (lista_resultado_adicional):
-                if (sempre_amarrar_jogos):
-                    acerto_jogo_adicional = [a for a in lista_resultado_adicional if a >= qtde_maxima_repetida_simulacao_resultado]
-                    resultado = (len(acerto_jogo_adicional) == 0)
-                else:
-                    acerto_jogo_adicional = [a for a in lista_resultado_adicional if a > qtde_maxima_repetida_simulacao_resultado]
-                    resultado = (len(acerto_jogo_adicional) > 0)
-
-            return resultado        
     else:        
         for p in premiacoes:
             prm = p[0]
@@ -161,20 +144,3 @@ def get_result_bet(id_type_bet: int,
                 lista_total.append({"Dezenas": prm, "Acertos": 0})
     
         return lista_total
-
-def update_simulacao(id_simulacao: int,
-                    id_tipo_jogo: int,
-                    id_usuario: int,
-                    nr_concurso: int,
-                    numeros_simulados: dict) -> bool:
-
-    obj = SimulacaoDto(id_simulacao=id_simulacao,
-                       id_tipo_jogo=id_tipo_jogo,
-                       id_usuario=id_usuario,
-                       nr_concurso=nr_concurso)
-    response = simulation_repository.save_simulation(obj)
-    if (response):
-        itens = SimulacaoFactory.item(obj, numeros_simulados)
-        simulation_repository.save_item_simulation(itens)
-
-

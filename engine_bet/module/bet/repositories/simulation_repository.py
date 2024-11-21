@@ -10,9 +10,9 @@ class simulation_repository:
         register(cls)
 
     def save_simulation(obj: SimulacaoDto) -> bool:
-        instruction = """INSERT INTO SIMULACAO (id_simulacao, id_usuario, id_tipo_jogo, nr_concurso)
-                        VALUES({0},{1},{2},{3})"""
-        command = instruction.format(obj.id_simulacao, obj.id_usuario, obj.id_tipo_jogo, obj.nr_concurso)
+        instruction = """INSERT INTO SIMULACAO (id_simulacao, id_usuario, id_tipo_jogo, nr_concurso, tp_geracao)
+                        VALUES({0},{1},{2},{3},'{4}')"""
+        command = instruction.format(obj.id_simulacao, obj.id_usuario, obj.id_tipo_jogo, obj.nr_concurso, obj.tp_geracao)
         exec = conector.write_data(command)
         return exec
 

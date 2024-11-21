@@ -8,7 +8,8 @@ from engine_bet.module.bet.dtos.type_bet_dto import TypeBetDto
 from engine_bet.module.bet.dtos.type_bet_structure import TypeBetStructureDTO
 from engine_bet.module.bet.repositories.simulation_repository import simulation_repository
 from engine_bet.module.bet.repositories.type_bet_repository import type_bet_repository
-from engine_bet.module.bet.services.service import generate_new_bet, get_result_bet, raffle_by_id, update_simulacao
+from engine_bet.module.bet.services.service import generate_new_bet, get_result_bet, raffle_by_id
+from engine_bet.module.bet.services.simulation_service import insert
 
 # Inicio - Parametros
 id = 2
@@ -16,7 +17,6 @@ id_usuario = 1
 qtde_aposta = 5
 qtde_dezena_aposta = 7
 somente_ausente = False
-aposta_validacao = ['1', '9', '10', '12', '13', '19', '25', '27', '28', '31']
 amarrar_jogos = False
 # Fim - Parametros
 grava_simulacao = True
@@ -159,10 +159,12 @@ simulacao = simulation_repository.read_last_simulation(id_tipo_jogo=id,
                                                         nr_concurso_aposta=tipo_jogo.nr_concurso_max)
 
 id_simulacao = (simulacao.id_simulacao if simulacao else 0)
+tentativas = 0
 for i in range(qtde_aposta):
     jogo_invalido = True
     id_simulacao += 1
     while jogo_invalido:
+        tentativas += 1
         jogo = generate_new_bet(calculos=list(calculos),
                                 qtde_filtrar_ausente=qt_filtrar_ausente,
                                 qtde_filtrar_repetido=qt_filtrar_repetido,
@@ -173,19 +175,23 @@ for i in range(qtde_aposta):
         jogo_invalido = get_result_bet(id_type_bet=id,
                                        bets=",".join(map(str, jogo)),
                                        valida_jogos=True,
-                                       bet_simulation_result=aposta_validacao,
                                        qtde_maxima_repetida_simulacao_resultado=qtde_maxima_dezenas_repetidas_entre_jogos,
                                        desvio_medio=media_desvio,
                                        sempre_amarrar_jogos=amarrar_jogos,
                                        id_usuario=id_usuario
                                        )
+        if (jogo_invalido and qt_filtrar_ausente > 0 and tentativas >= 30):
+            qt_filtrar_ausente -= 1
+            qt_filtrar_repetido += 1
+            dezenas_filtrar += 1
+            tentativas = 0
 
     if (grava_simulacao):
-        simulacao = update_simulacao(id_simulacao=id_simulacao,
-                                    id_usuario=id_usuario,
-                                    id_tipo_jogo=id,
-                                    nr_concurso=tipo_jogo.nr_concurso_max,
-                                    numeros_simulados=jogo)
+        simulacao = insert(id_simulacao=id_simulacao,
+                            id_usuario=id_usuario,
+                            id_tipo_jogo=id,
+                            nr_concurso=tipo_jogo.nr_concurso_max,
+                            numeros_simulados=jogo)
     print(jogo)
 
     

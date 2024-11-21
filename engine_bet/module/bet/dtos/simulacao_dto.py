@@ -11,4 +11,4 @@ class SimulacaoDto(BaseModel):
     
     nr_concurso: int
 
-    # nr_simulado: Optional[int]
+    tp_geracao: Optional[str] = 'A'

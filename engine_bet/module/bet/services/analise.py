@@ -14,7 +14,7 @@ from engine_bet.module.bet.services.simulation_service import insert
 # Inicio - Parametros
 id = 2
 id_usuario = 1
-qtde_aposta = 5
+qtde_aposta = 8
 qtde_dezena_aposta = 7
 somente_ausente = False
 amarrar_jogos = False

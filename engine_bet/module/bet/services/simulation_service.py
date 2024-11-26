@@ -29,11 +29,12 @@ async def add_simulation(id_tipo_jogo: int, id_usuario: int, jogo: str) -> dict:
                             tp_geracao='M'
                         )
     
-    return response.append({'Loteria:': tipo_jogo.nm_tipo_jogo,
-                            "Concurso:": tipo_jogo.nr_concurso_max,
-                            "Jogo(s) Gerado(s):": total
+    response.append({'Loteria:': tipo_jogo.nm_tipo_jogo,
+                        "Concurso:": tipo_jogo.nr_concurso_max,
+                        "Jogo(s) Gerado(s):": total
                         }
                     )
+    return response
 
 def insert(id_simulacao: int,
                     id_tipo_jogo: int,

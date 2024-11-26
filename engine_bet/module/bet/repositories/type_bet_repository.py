@@ -46,7 +46,6 @@ class type_bet_repository:
                                                , min(qt_dezena_acerto) as qt_dezena_acerto
                                             FROM tipo_jogo_premiacao tjp 
                                            WHERE id_tipo_jogo = {id_type_bet}
-                                             AND ind_valor_variavel = '0'
                                            GROUP BY id_tipo_jogo"""
                                      )
         if (response == None):

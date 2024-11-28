@@ -48,17 +48,20 @@ def raffle_by_id(id_type_bet: int, cicle: bool, historical: bool = False) -> dic
     return RaffleDto.factory(id_type_bet, raffle)
 
 def generate_new_bet(calculos: list[CalculateDTO],
-                     dezenas_filtrar: int,
                      qtde_filtrar_ausente: int,
                      qtde_filtrar_repetido: int,
                      somente_ausente: bool) -> dict:
-    
+   
     ausente = [c for c in calculos if c.QtAusenciaRecente > 0]
-    ausente = sorted(ausente, key=lambda p: p.VlProbabilidade)
+    ausente = sorted(ausente, key=lambda p: p.QtAusenciaRecente, reverse=True)
     ausente = [a.NrDezena for a in ausente]
-    
-    repeticao = [c for c in calculos if c.QtAusenciaRecente == 0 and c.QtRepeticaoRecente > 0 and c.QtRepeticaoRecente <= dezenas_filtrar]
-    repeticao = sorted(repeticao, key=lambda p: p.VlProbabilidade)
+    if (qtde_filtrar_ausente > len(ausente)):
+        sobra = qtde_filtrar_ausente - (len(ausente) - 1)
+        qtde_filtrar_ausente = (len(ausente) - 1)
+        qtde_filtrar_repetido = qtde_filtrar_repetido + sobra
+
+    repeticao = [c for c in calculos if c.QtAusenciaRecente == 0 and c.QtRepeticaoRecente > 0 and c.QtRepeticaoRecente <= qtde_filtrar_repetido]
+    repeticao = sorted(repeticao, key=lambda p: p.QtRepeticaoRecente, reverse=True)
     repeticao = [a.NrDezena for a in repeticao]
 
     jogo_ausente = random.sample(ausente, k=(qtde_filtrar_ausente if not somente_ausente else qtde_filtrar_ausente + qtde_filtrar_repetido))

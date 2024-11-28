@@ -1,3 +1,4 @@
+import random
 import pandas as pd
 import numpy as np
 from engine_bet.module.bet.dtos.calculate_dto import CalculateDTO
@@ -12,13 +13,14 @@ from engine_bet.module.bet.services.service import generate_new_bet, get_result_
 from engine_bet.module.bet.services.simulation_service import insert
 
 # Inicio - Parametros
-id = 2
+id = 1
 id_usuario = 1
-qtde_aposta = 8
-qtde_dezena_aposta = 7
+qtde_aposta = 1
+qtde_dezena_aposta = 20
 somente_ausente = False
 amarrar_jogos = False
 # Fim - Parametros
+jogo_curto = False
 grava_simulacao = True
 tipo_jogo: TypeBetDto
 tipo_jogo_estrutura: TypeBetStructureDTO
@@ -29,7 +31,7 @@ tipo_jogo_premiacao = type_bet_repository.read_type_bet_award(id)
 
 qtde_maxima_dezenas_repetidas_entre_jogos = tipo_jogo_premiacao.qt_dezena_acerto
 if not (amarrar_jogos):
-    qtde_maxima_dezenas_repetidas_entre_jogos = qtde_maxima_dezenas_repetidas_entre_jogos - 1
+    qtde_maxima_dezenas_repetidas_entre_jogos -= 1
 
 if (qtde_dezena_aposta < tipo_jogo.qt_dezena_minima_aposta):
     print('Quantidade de dezenas da aposta é menor do que a quantidade mínima permitida.')
@@ -61,6 +63,7 @@ dezenas_filtrar = int((total_repetido / n_sorteios).__round__(0))
 if not ((numeros_total / 2) > tipo_jogo.qt_dezena_minima_aposta):
     # Para os casos de lotofacil pq temos 10 ausentes e o mínimo de dezenas são 15.
     # Neste caso, o parametro informado é invalidado
+    jogo_curto = True
     somente_ausente = False
 
 qtde_adicional_ausente = 0
@@ -151,9 +154,7 @@ for item in tipo_jogo_estrutura:
             VlProbabilidade=(100-(prob)-qtde_repeticao_recente)
             )
     )
-    
-qt_filtrar_ausente=(tipo_jogo.qt_dezena_minima_aposta-dezenas_filtrar)+qtde_adicional_ausente
-qt_filtrar_repetido=(dezenas_filtrar+qtde_adicional_repetido)
+
 simulacao = simulation_repository.read_last_simulation(id_tipo_jogo=id,
                                                         id_usuario=id_usuario,
                                                         nr_concurso_aposta=tipo_jogo.nr_concurso_max)
@@ -164,11 +165,20 @@ for i in range(qtde_aposta):
     jogo_invalido = True
     id_simulacao += 1
     while jogo_invalido:
+        if (jogo_curto):
+            index = random.randrange(1,2)
+        else:
+            index = random.randrange(0,1)
+    
+        qt_filtrar = random.randrange(dezenas_filtrar - index, 
+                                        dezenas_filtrar + index)
+
+        qt_filtrar_ausente=(tipo_jogo.qt_dezena_minima_aposta-qt_filtrar)+qtde_adicional_ausente
+        qt_filtrar_repetido=(qt_filtrar+qtde_adicional_repetido)
         tentativas += 1
         jogo = generate_new_bet(calculos=list(calculos),
                                 qtde_filtrar_ausente=qt_filtrar_ausente,
                                 qtde_filtrar_repetido=qt_filtrar_repetido,
-                                dezenas_filtrar=dezenas_filtrar,
                                 somente_ausente=somente_ausente
                                 )
         
@@ -180,11 +190,6 @@ for i in range(qtde_aposta):
                                        sempre_amarrar_jogos=amarrar_jogos,
                                        id_usuario=id_usuario
                                        )
-        if (jogo_invalido and qt_filtrar_ausente > 0 and tentativas >= 30):
-            qt_filtrar_ausente -= 1
-            qt_filtrar_repetido += 1
-            dezenas_filtrar += 1
-            tentativas = 0
 
     if (grava_simulacao):
         simulacao = insert(id_simulacao=id_simulacao,

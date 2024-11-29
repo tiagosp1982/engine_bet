@@ -1,13 +1,13 @@
 import numpy as np
 from collections import Counter
 
-from engine_bet.module.bet.dtos.raffle_dto import RaffleDto
-from engine_bet.module.bet.services.service import raffle_by_id
+from engine_bet.module.bet.dtos.sorteio_dto import SorteioDTO
+from engine_bet.module.bet.services.service import sorteio_by_id
 
 # Exemplo de base histórica com conjuntos de 7 números
 id = 1
-dados = raffle_by_id(id, False, True)
-historical_data = RaffleDto.factoryRaffleOnly(dados)
+dados = sorteio_by_id(id, False, True)
+historical_data = SorteioDTO.factorysorteioOnly(dados)
 
 # Função para identificar padrões básicos
 def analyze_patterns(data):

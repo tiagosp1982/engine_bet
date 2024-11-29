@@ -4,7 +4,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from atexit import register
-from engine_bet.module.bet.repositories.parameter_repository import parameter_repository
+from engine_bet.module.bet.repositories.parametro_repository import parametro_repository
 
 
 class updater:
@@ -12,17 +12,17 @@ class updater:
         super().__init__(**kwargs)
         register(cls)
 
-    def list_result_external(route: str, contest: Optional[int] = None) -> dict:
+    def lista_result_external(route: str, concurso: Optional[int] = None) -> dict:
         apiUrl: str
-        apiUrl = parameter_repository.read_parameter()
+        apiUrl = parametro_repository.busca_parametro()
         
         if (route == None):
             return None.__str__()
         else:
             apiUrl = apiUrl.__str__() + route.__str__()
             
-        if (contest != None):
-            apiUrl = apiUrl.__str__() + contest.__str__()
+        if (concurso != None):
+            apiUrl = apiUrl.__str__() + concurso.__str__()
 
         retry_strategy = Retry(
             total=10,

@@ -2,7 +2,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class CalculateDTO(BaseModel):
+class CalculoDTO(BaseModel):
     NrDezena: Optional[int] = None
 
     QtAusenciaRecente: Optional[int] = None

@@ -1,15 +1,15 @@
 import random
 import pandas as pd
 import numpy as np
-from engine_bet.module.bet.dtos.calculate_dto import CalculateDTO
-from engine_bet.module.bet.dtos.probability_dto import ProbabilityDTO
-from engine_bet.module.bet.dtos.raffle_dto import RaffleDto
-from engine_bet.module.bet.dtos.tipo_jogo_premiacao_dto import TipoJogoPremiacaoDto
-from engine_bet.module.bet.dtos.type_bet_dto import TypeBetDto
-from engine_bet.module.bet.dtos.type_bet_structure import TypeBetStructureDTO
-from engine_bet.module.bet.repositories.simulation_repository import simulation_repository
-from engine_bet.module.bet.repositories.type_bet_repository import type_bet_repository
-from engine_bet.module.bet.services.service import generate_new_bet, get_result_bet, raffle_by_id
+from engine_bet.module.bet.dtos.calculo_dto import CalculoDTO
+from engine_bet.module.bet.dtos.probabilidade_dto import ProbabilidadeDTO
+from engine_bet.module.bet.dtos.sorteio_dto import SorteioDTO
+from engine_bet.module.bet.dtos.tipo_jogo_premiacao_dto import TipoJogoPremiacaoDTO
+from engine_bet.module.bet.dtos.tipo_jogo_dto import TipoJogoDTO
+from engine_bet.module.bet.dtos.tipo_jogo_estrutura_dto import TipoJogoEstruturaDTO
+from engine_bet.module.bet.repositories.simulacao_repository import simulacao_repository
+from engine_bet.module.bet.repositories.tipo_jogo_repository import tipo_jogo_repository
+from engine_bet.module.bet.services.service import generate_new_bet, get_result_bet, sorteio_by_id
 from engine_bet.module.bet.services.simulation_service import insert
 
 # Inicio - Parametros
@@ -22,12 +22,12 @@ amarrar_jogos = False
 # Fim - Parametros
 jogo_curto = False
 grava_simulacao = True
-tipo_jogo: TypeBetDto
-tipo_jogo_estrutura: TypeBetStructureDTO
-tipo_jogo_premiacao: TipoJogoPremiacaoDto
-tipo_jogo = type_bet_repository.read_type_bet(id)
-tipo_jogo_estrutura = type_bet_repository.read_type_bet_structure(id)
-tipo_jogo_premiacao = type_bet_repository.read_type_bet_award(id)
+tipo_jogo: TipoJogoDTO
+tipo_jogo_estrutura: TipoJogoEstruturaDTO
+tipo_jogo_premiacao: TipoJogoPremiacaoDTO
+tipo_jogo = tipo_jogo_repository.busca_tipo_jogo(id)
+tipo_jogo_estrutura = tipo_jogo_repository.busca_tipo_jogo_estrutura(id)
+tipo_jogo_premiacao = tipo_jogo_repository.busca_tipo_jogo_premiacao(id)
 
 qtde_maxima_dezenas_repetidas_entre_jogos = tipo_jogo_premiacao.qt_dezena_acerto
 if not (amarrar_jogos):
@@ -41,8 +41,8 @@ if (qtde_dezena_aposta > tipo_jogo.qt_dezena_maxima_aposta):
     print('Quantidade de dezenas da aposta é maior do que a quantidade máxima permitida.')
     exit()
 
-dados = raffle_by_id(id, False)
-sorteios = RaffleDto.factoryRaffleOnly(dados)
+dados = sorteio_by_id(id, False)
+sorteios = SorteioDTO.factorysorteioOnly(dados)
 
 numeros_por_sorteio = tipo_jogo.qt_dezena_resultado
 numeros_total = len(tipo_jogo_estrutura)
@@ -98,9 +98,9 @@ total_sorteios = n_sorteios * numeros_por_sorteio
 probabilidades_empiricas = (frequencia / total_sorteios).convert_dtypes(convert_integer=True)
 
 probabilidades = []
-list_probabilidade = (probabilidades_empiricas * 100).round(2).to_frame().T.to_dict()
-for key in list_probabilidade:
-    probabilidades.append(ProbabilityDTO(number=key, probability=list_probabilidade[key]['count']))
+lista_probabilidade = (probabilidades_empiricas * 100).round(2).to_frame().T.to_dict()
+for key in lista_probabilidade:
+    probabilidades.append(ProbabilidadeDTO(numero=key, probabilidade=lista_probabilidade[key]['count']))
 
 calculos = []
 concurso_anterior = 0
@@ -139,13 +139,12 @@ for item in tipo_jogo_estrutura:
         else:
             index = 0
 
-    # prob = [res.probability for res in probabilidades if res.args[0] == item.nr_estrutura_jogo]
     for res in probabilidades: 
-        if res.number == item.nr_estrutura_jogo:
-            prob = res.probability
+        if res.numero == item.nr_estrutura_jogo:
+            prob = res.probabilidade
 
     calculos.append(
-        CalculateDTO(
+        CalculoDTO(
             NrDezena=item.nr_estrutura_jogo,
             QtAusenciaRecente=qtde_ausencia_recente,
             QtAusenciaTotal=qtde_ausencia_total,
@@ -155,7 +154,7 @@ for item in tipo_jogo_estrutura:
             )
     )
 
-simulacao = simulation_repository.read_last_simulation(id_tipo_jogo=id,
+simulacao = simulacao_repository.busca_ultima_simulacao(id_tipo_jogo=id,
                                                         id_usuario=id_usuario,
                                                         nr_concurso_aposta=tipo_jogo.nr_concurso_max)
 
@@ -182,7 +181,7 @@ for i in range(qtde_aposta):
                                 somente_ausente=somente_ausente
                                 )
         
-        jogo_invalido = get_result_bet(id_type_bet=id,
+        jogo_invalido = get_result_bet(id_tipo_jogo=id,
                                        bets=",".join(map(str, jogo)),
                                        valida_jogos=True,
                                        qtde_maxima_repetida_simulacao_resultado=qtde_maxima_dezenas_repetidas_entre_jogos,

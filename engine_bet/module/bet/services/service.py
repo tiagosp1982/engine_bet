@@ -1,21 +1,19 @@
-from itertools import combinations
+import numpy as np
 import random
-from engine_bet.module.bet.dtos.calculate_dto import CalculateDTO
-from engine_bet.module.bet.dtos.raffle_dto import RaffleDto
+from itertools import combinations
+from engine_bet.module.bet.dtos.calculo_dto import CalculoDTO
+from engine_bet.module.bet.dtos.sorteio_dto import SorteioDTO
 from engine_bet.module.bet.dtos.simulacao_dto import SimulacaoDto
 from engine_bet.module.bet.factories.simulacao_factory import SimulacaoFactory
-from engine_bet.module.bet.repositories.bet_repository import bet_repository
-import numpy as np
-
-from engine_bet.module.bet.repositories.raffle_repository import raffle_repository
-from engine_bet.module.bet.repositories.simulation_repository import simulation_repository
-from engine_bet.module.bet.repositories.type_bet_repository import type_bet_repository
+from engine_bet.module.bet.repositories.sorteio_repository import sorteio_repository
+from engine_bet.module.bet.repositories.simulacao_repository import simulacao_repository
+from engine_bet.module.bet.repositories.tipo_jogo_repository import tipo_jogo_repository
 
 def __init__(cls):
         pass
 
-async def confer_bet_detail(id_type_bet: int, betInput: str) -> dict:
-    sorteios = bet_repository.read_data_bet(id_type_bet)
+async def confer_bet_detail(id_tipo_jogo: int, betInput: str) -> dict:
+    sorteios = sorteio_repository.busca_sorteio_agrupado(id_tipo_jogo)
     lista_resultado = []
 
     aposta = betInput.split(',')
@@ -27,27 +25,27 @@ async def confer_bet_detail(id_type_bet: int, betInput: str) -> dict:
     
     return lista_resultado
 
-async def confer_bet_total(id_type_bet: int, betInput: str) -> dict:
-    lista_total = get_result_bet(id_type_bet, betInput, False)
+async def confer_bet_total(id_tipo_jogo: int, betInput: str) -> dict:
+    lista_total = get_result_bet(id_tipo_jogo, betInput, False)
     return lista_total
 
-def raffle_by_id(id_type_bet: int, cicle: bool, historical: bool = False) -> dict:
-    tipo_jogo_estrutura = type_bet_repository.read_type_bet_structure(id_type_bet)
+def sorteio_by_id(id_tipo_jogo: int, cicle: bool, historical: bool = False) -> dict:
+    tipo_jogo_estrutura = tipo_jogo_repository.busca_tipo_jogo_estrutura(id_tipo_jogo)
     limit_data = len(tipo_jogo_estrutura)
     if (historical):
-        tipo_jogo = type_bet_repository.read_type_bet(id_type_bet)
+        tipo_jogo = tipo_jogo_repository.busca_tipo_jogo(id_tipo_jogo)
         limit_data = tipo_jogo.nr_concurso_max
 
     if (cicle):
-        raffle = raffle_repository.read_raffle_by_cicle(id_type_bet)
-        if (raffle == None):
-            raffle = raffle_repository.read_raffle(id_type_bet, limit_data)
+        sorteio = sorteio_repository.busca_sorteio_por_ciclo(id_tipo_jogo)
+        if (sorteio == None):
+            sorteio = sorteio_repository.busca_sorteio(id_tipo_jogo, limit_data)
     else:
-        raffle = raffle_repository.read_raffle(id_type_bet, limit_data)
+        sorteio = sorteio_repository.busca_sorteio(id_tipo_jogo, limit_data)
     
-    return RaffleDto.factory(id_type_bet, raffle)
+    return SorteioDTO.factory(id_tipo_jogo, sorteio)
 
-def generate_new_bet(calculos: list[CalculateDTO],
+def generate_new_bet(calculos: list[CalculoDTO],
                      qtde_filtrar_ausente: int,
                      qtde_filtrar_repetido: int,
                      somente_ausente: bool) -> dict:
@@ -71,19 +69,18 @@ def generate_new_bet(calculos: list[CalculateDTO],
 
     return jogo
 
-def get_result_bet(id_type_bet: int,
+def get_result_bet(id_tipo_jogo: int,
                    bets: str,
                    valida_jogos: bool = False,
-                #    bet_simulation_result: list = None,
                    qtde_maxima_repetida_simulacao_resultado: int = None,
                    desvio_medio: float = None,
                    sempre_amarrar_jogos: bool = False,
                    id_usuario: int = 0
                    ):
 
-    tipo_jogo = type_bet_repository.read_type_bet(id_type_bet)
-    sorteios = bet_repository.read_data_bet(id_type_bet)
-    premiacoes = bet_repository.read_type_bet_prize_amount(id_type_bet)
+    tipo_jogo = tipo_jogo_repository.busca_tipo_jogo(id_tipo_jogo)
+    sorteios = sorteio_repository.busca_sorteio_agrupado(id_tipo_jogo)
+    premiacoes = tipo_jogo_repository.busca_dezenas_premiacao(id_tipo_jogo)
     lista_resultado = []
     lista_simulado = []
     lista_total = []
@@ -117,7 +114,7 @@ def get_result_bet(id_type_bet: int,
             return True
 
         # Valida os jogos já gerados para esse concurso
-        dados = simulation_repository.read_simulation_item(id_tipo_jogo=id_type_bet, 
+        dados = simulacao_repository.busca_simulacao_item(id_tipo_jogo=id_tipo_jogo, 
                                                            id_usuario=id_usuario,
                                                            nr_concurso_aposta=tipo_jogo.nr_concurso_max)
         simulados = SimulacaoFactory.simulationOnly(dados)    

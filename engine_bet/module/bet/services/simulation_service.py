@@ -1,16 +1,16 @@
 from itertools import combinations
 from engine_bet.module.bet.dtos.simulacao_dto import SimulacaoDto
 from engine_bet.module.bet.factories.simulacao_factory import SimulacaoFactory
-from engine_bet.module.bet.repositories.simulation_repository import simulation_repository
-from engine_bet.module.bet.repositories.type_bet_repository import type_bet_repository
+from engine_bet.module.bet.repositories.simulacao_repository import simulacao_repository
+from engine_bet.module.bet.repositories.tipo_jogo_repository import tipo_jogo_repository
 
 
 def __init__(cls):
         pass
 
 async def add_simulation(id_tipo_jogo: int, id_usuario: int, jogo: str) -> dict:
-    tipo_jogo = type_bet_repository.read_type_bet(id_tipo_jogo)
-    simulacao = simulation_repository.read_last_simulation(id_tipo_jogo=id_tipo_jogo,
+    tipo_jogo = tipo_jogo_repository.busca_tipo_jogo(id_tipo_jogo)
+    simulacao = simulacao_repository.busca_ultima_simulacao(id_tipo_jogo=id_tipo_jogo,
                                                         id_usuario=id_usuario,
                                                         nr_concurso_aposta=tipo_jogo.nr_concurso_max)
 
@@ -48,8 +48,8 @@ def insert(id_simulacao: int,
                        id_usuario=id_usuario,
                        nr_concurso=nr_concurso,
                        tp_geracao=tp_geracao)
-    response = simulation_repository.save_simulation(obj)
+    response = simulacao_repository.atualiza_simulacao(obj)
     if (response):
         itens = SimulacaoFactory.item(obj, numeros_simulados)
-        simulation_repository.save_item_simulation(itens)
+        simulacao_repository.atualiza_simulacao_item(itens)
          

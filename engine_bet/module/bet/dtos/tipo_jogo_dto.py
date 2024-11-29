@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class TypeBetDto(BaseModel):
+class TipoJogoDTO(BaseModel):
     
     id_tipo_jogo: int
 
@@ -18,7 +18,7 @@ class TypeBetDto(BaseModel):
     nr_concurso_max: int
 
     def add(self,obj):
-      assert isinstance(obj,TypeBetDto)
+      assert isinstance(obj,TipoJogoDTO)
       self.id_tipo_jogo = obj.id_tipo_jogo
       self.nm_route = obj.nm_route
       self.nm_tipo_jogo = obj.nm_tipo_jogo
@@ -28,7 +28,7 @@ class TypeBetDto(BaseModel):
       self.qt_dezena_resultado = obj.qt_dezena_resultado
 
     def factory(obj) -> dict:
-        return TypeBetDto(id_tipo_jogo=obj[0][0],
+        return TipoJogoDTO(id_tipo_jogo=obj[0][0],
                               nm_tipo_jogo=obj[0][1],
                               qt_dezena_resultado=obj[0][2],
                               qt_dezena_minima_aposta=obj[0][3],

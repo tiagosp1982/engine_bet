@@ -3,7 +3,6 @@ from motor_aposta.module.aposta.repositories.tipo_jogo_repository import tipo_jo
 from motor_aposta.module.caixa.api.atualiza_resultado import atualiza_resultado
 from motor_aposta.module.aposta.repositories.concurso_repository import concurso_repository
 from motor_aposta.module.aposta.dtos.concurso_dto import ConcursoDTO
-from motor_aposta.module.aposta.dtos.sorteio_dto import SorteioDTO
 from motor_aposta.module.aposta.dtos.importacao_dto import ImportacaoDTO
 from time import sleep
 

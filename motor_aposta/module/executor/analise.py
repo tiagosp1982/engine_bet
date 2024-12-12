@@ -3,20 +3,20 @@ import pandas as pd
 import numpy as np
 from motor_aposta.module.aposta.dtos.calculo_dto import CalculoDTO
 from motor_aposta.module.aposta.dtos.probabilidade_dto import ProbabilidadeDTO
-from motor_aposta.module.aposta.dtos.sorteio_dto import SorteioDTO
 from motor_aposta.module.aposta.dtos.tipo_jogo_premiacao_dto import TipoJogoPremiacaoDTO
 from motor_aposta.module.aposta.dtos.tipo_jogo_dto import TipoJogoDTO
 from motor_aposta.module.aposta.dtos.tipo_jogo_estrutura_dto import TipoJogoEstruturaDTO
+from motor_aposta.module.aposta.factories.sorteio_factory import SorteioFactory
 from motor_aposta.module.aposta.repositories.simulacao_repository import simulacao_repository
 from motor_aposta.module.aposta.repositories.tipo_jogo_repository import tipo_jogo_repository
-from motor_aposta.module.aposta.services.service import generate_new_bet, get_result_bet, sorteio_by_id
-from motor_aposta.module.aposta.services.simulacao_service import insert
+from motor_aposta.module.aposta.services.resultado_service import sorteio_by_id, gera_aposta, valida_resultado
+from motor_aposta.module.aposta.services.simulacao_service import insere_simulacao
 
 # Inicio - Parametros
 id = 1
 id_usuario = 1
 qtde_aposta = 1
-qtde_dezena_aposta = 20
+qtde_dezena_aposta = 15
 somente_ausente = False
 amarrar_jogos = False
 # Fim - Parametros
@@ -42,7 +42,7 @@ if (qtde_dezena_aposta > tipo_jogo.qt_dezena_maxima_aposta):
     exit()
 
 dados = sorteio_by_id(id, False)
-sorteios = SorteioDTO.ConverterListaSorteio(dados)
+sorteios = SorteioFactory.ConverterListaSorteio(dados)
 
 numeros_por_sorteio = tipo_jogo.qt_dezena_resultado
 numeros_total = len(tipo_jogo_estrutura)
@@ -175,27 +175,26 @@ for i in range(qtde_aposta):
         qt_filtrar_ausente=(tipo_jogo.qt_dezena_minima_aposta-qt_filtrar)+qtde_adicional_ausente
         qt_filtrar_repetido=(qt_filtrar+qtde_adicional_repetido)
         tentativas += 1
-        jogo = generate_new_bet(calculos=list(calculos),
-                                qtde_filtrar_ausente=qt_filtrar_ausente,
-                                qtde_filtrar_repetido=qt_filtrar_repetido,
-                                somente_ausente=somente_ausente
-                                )
+        jogo = gera_aposta(calculos=list(calculos),
+                            qtde_filtrar_ausente=qt_filtrar_ausente,
+                            qtde_filtrar_repetido=qt_filtrar_repetido,
+                            somente_ausente=somente_ausente
+                            )
         
-        jogo_invalido = get_result_bet(id_tipo_jogo=id,
-                                       bets=",".join(map(str, jogo)),
-                                       valida_jogos=True,
-                                       qtde_maxima_repetida_simulacao_resultado=qtde_maxima_dezenas_repetidas_entre_jogos,
-                                       desvio_medio=media_desvio,
-                                       sempre_amarrar_jogos=amarrar_jogos,
-                                       id_usuario=id_usuario
-                                       )
+        jogo_invalido = valida_resultado(id_tipo_jogo=id,
+                                        apostas=",".join(map(str, jogo)),
+                                        qtde_maxima_repetida_simulacao_resultado=qtde_maxima_dezenas_repetidas_entre_jogos,
+                                        desvio_medio=media_desvio,
+                                        sempre_amarrar_jogos=amarrar_jogos,
+                                        id_usuario=id_usuario
+                                        )
 
     if (grava_simulacao):
-        simulacao = insert(id_simulacao=id_simulacao,
-                            id_usuario=id_usuario,
-                            id_tipo_jogo=id,
-                            nr_concurso=tipo_jogo.nr_concurso_max,
-                            numeros_simulados=jogo)
+        simulacao = insere_simulacao(id_simulacao=id_simulacao,
+                                    id_usuario=id_usuario,
+                                    id_tipo_jogo=id,
+                                    nr_concurso=tipo_jogo.nr_concurso_max,
+                                    numeros_simulados=jogo)
     print(jogo)
 
     

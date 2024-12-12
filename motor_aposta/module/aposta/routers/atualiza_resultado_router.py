@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from motor_aposta.module.aposta.services.importacao_services import importa_resultado_por_tipo_jogo
+from motor_aposta.module.aposta.services.importacao_service import importa_resultado_por_tipo_jogo
 
 
 router = APIRouter(prefix="/atualiza_sorteio")

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from motor_aposta.module.aposta.services.service import confere_resultado_detalhado
+from motor_aposta.module.aposta.services.resultado_service import confere_resultado_detalhado
 
 
 router = APIRouter(prefix="/resultado_detalhado")

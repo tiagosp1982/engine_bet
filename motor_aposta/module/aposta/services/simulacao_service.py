@@ -9,6 +9,9 @@ def __init__(cls):
         pass
 
 async def cria_simulacao(id_tipo_jogo: int, id_usuario: int, jogo: str) -> dict:
+    gera_simulacao(id_tipo_jogo=id_tipo_jogo, id_usuario=id_usuario, jogo=jogo)
+
+def gera_simulacao(id_tipo_jogo: int, id_usuario: int, jogo: str) -> dict:
     tipo_jogo = tipo_jogo_repository.busca_tipo_jogo(id_tipo_jogo)
     simulacao = simulacao_repository.busca_ultima_simulacao(id_tipo_jogo=id_tipo_jogo,
                                                         id_usuario=id_usuario,

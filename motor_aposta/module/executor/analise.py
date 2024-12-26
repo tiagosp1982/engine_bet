@@ -10,13 +10,13 @@ from motor_aposta.module.aposta.factories.sorteio_factory import SorteioFactory
 from motor_aposta.module.aposta.repositories.simulacao_repository import simulacao_repository
 from motor_aposta.module.aposta.repositories.tipo_jogo_repository import tipo_jogo_repository
 from motor_aposta.module.aposta.services.resultado_service import sorteio_by_id, gera_aposta, valida_resultado
-from motor_aposta.module.aposta.services.simulacao_service import insere_simulacao
+from motor_aposta.module.aposta.services.simulacao_service import gera_simulacao
 
 # Inicio - Parametros
 id = 1
 id_usuario = 1
 qtde_aposta = 1
-qtde_dezena_aposta = 15
+qtde_dezena_aposta = 16
 somente_ausente = False
 amarrar_jogos = False
 # Fim - Parametros
@@ -190,11 +190,9 @@ for i in range(qtde_aposta):
                                         )
 
     if (grava_simulacao):
-        simulacao = insere_simulacao(id_simulacao=id_simulacao,
-                                    id_usuario=id_usuario,
-                                    id_tipo_jogo=id,
-                                    nr_concurso=tipo_jogo.nr_concurso_max,
-                                    numeros_simulados=jogo)
+        simulacao = gera_simulacao(id_tipo_jogo=id,
+                                   id_usuario=id_usuario,
+                                    jogo=",".join(map(str, jogo)))
     print(jogo)
 
     

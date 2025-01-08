@@ -52,6 +52,23 @@ class conector:
             return True
         except Exception as e:
             print("Erro ao conectar ou operar no banco de dados2:", e)
+
+    def write_to_csv(arquivo: str, tabela: str) -> bool:
+        conexao = psycopg2.connect(DATABASE_URL)
+
+        # Criar um cursor para executar comandos SQL
+        cursor = conexao.cursor()
+        
+        with open(arquivo, 'r') as f:
+            cursor.copy_expert(f"COPY {tabela} FROM STDIN WITH CSV", f)
+            conexao.commit()
+        
+        if cursor:
+            cursor.close()
+        if conexao:
+            conexao.close()
+
+        return True
     
     def write_data_many(command, data) -> bool:
         try:

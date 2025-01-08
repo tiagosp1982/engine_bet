@@ -72,7 +72,7 @@ def confere_resultado(id_tipo_jogo: int, apostas: str):
     premiacoes = tipo_jogo_repository.busca_dezenas_premiacao(id_tipo_jogo)
     lista_total = []
     
-    aposta = apostas.split(',')
+    aposta = apostas.split(', ')
     lista_resultado = calcula_resultados(aposta, sorteios)
     for p in premiacoes:
         prm = p[0]
@@ -89,7 +89,7 @@ def calcula_resultados(aposta: list[str], sorteios: dict) -> list:
     resultados = []
     for s in sorteios:
         sorteioString = str(s[1])
-        sorteio = sorteioString.split(',')
+        sorteio = sorteioString.split(', ')
         resultado = [elemento for elemento in aposta if elemento in sorteio]
         resultados.append(len(resultado))
     return resultados

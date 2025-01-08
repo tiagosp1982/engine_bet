@@ -29,3 +29,16 @@ class SorteioFactory():
             sorteios.append(resultado[1])
 
         return sorteios
+
+    def ConverterListaSorteioId(listsorteio) -> dict:
+        agrupados = defaultdict(list)
+
+        for sorteio in listsorteio:
+            agrupados[sorteio.nr_concurso].append(int(sorteio.nr_sorteado))
+
+        sorteios = []
+        for resultado in agrupados.items():
+            item = [resultado[0], resultado[1]]
+            sorteios.append(item)
+
+        return sorteios

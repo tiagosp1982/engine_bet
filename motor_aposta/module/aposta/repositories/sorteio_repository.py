@@ -1,5 +1,6 @@
 from atexit import register
 from motor_aposta.infrastructure.database.conector import conector
+from motor_aposta.module.aposta.factories.sorteio_factory import SorteioFactory
 
 
 class sorteio_repository:
@@ -36,7 +37,40 @@ class sorteio_repository:
                                          ORDER BY s.nr_concurso DESC
                                                 , s.nr_sorteado ASC"""
                                    )
+
         return data
+
+    def lista_sorteio(_id_tipo_jogo: int) -> dict:
+        data = conector.read_data(f"""SELECT s.nr_concurso
+                                           , s.nr_sorteado 
+                                        FROM sorteio s
+                                       WHERE s.id_tipo_jogo={_id_tipo_jogo}
+                                       ORDER BY s.nr_concurso DESC
+                                              , s.nr_sorteado ASC"""
+                                   )
+        if (data == None):
+            return None
+        
+        return SorteioFactory.ConverterDto(_id_tipo_jogo, data)
+
+    def lista_sorteio_combinacao(_id_tipo_jogo: int, _nr_qtde_dezena: int) -> dict:
+        data = conector.read_data(f"""SELECT s.nr_concurso
+                                           , s.nr_sorteado 
+                                        FROM sorteio s
+                                       WHERE s.id_tipo_jogo={_id_tipo_jogo}
+                                         AND NOT EXISTS ( SELECT 1
+                                                            FROM combinacao_sorteio cs
+                                                           WHERE cs.id_tipo_jogo = s.id_tipo_jogo
+                                                             AND cs.nr_concurso = s.nr_concurso
+                                                             AND cs.nr_qtde_dezena = {_nr_qtde_dezena}
+                                                        )
+                                       ORDER BY s.nr_concurso DESC
+                                              , s.nr_sorteado ASC"""
+                                   )
+        if (data == None):
+            return None
+        
+        return SorteioFactory.ConverterDto(_id_tipo_jogo, data)     
 
     def busca_sorteio_agrupado(id_tipo_jogo: int) -> dict:
         data = conector.read_data(f"""SELECT nr_concurso

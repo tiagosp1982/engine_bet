@@ -1,4 +1,4 @@
-from motor_aposta.module.aposta.dtos.combinacao_dto import CombinacaoDto
+from motor_aposta.module.aposta.dtos.combinacao_dto import CombinacaoDto, CombinacaoFormatadaDto
 
 
 class CombinacaoFactory():
@@ -9,3 +9,19 @@ class CombinacaoFactory():
             lista.append(item)
         
         return lista
+    
+    def ConverteListaParaInt(obj: dict) -> dict:
+        lista = []
+        for o in obj:
+            item = []
+            n = []
+            dezenas = o.nr_dezenas.split(', ')
+            for d in dezenas:
+                n.append(int(d))
+
+            item = [o.id_combinacao, n]
+            lista.append(item)
+
+        return lista
+            
+        

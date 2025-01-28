@@ -6,7 +6,7 @@ from motor_aposta.module.aposta.repositories.tipo_jogo_repository import tipo_jo
 
 
 def __init__(cls):
-        pass
+    pass
 
 async def cria_simulacao(id_tipo_jogo: int, id_usuario: int, jogo: str) -> dict:
     gera_simulacao(id_tipo_jogo=id_tipo_jogo, id_usuario=id_usuario, jogo=jogo)

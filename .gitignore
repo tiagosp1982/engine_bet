@@ -78,5 +78,7 @@ Dockerfile
 # Arquivo .env
 .env
 
+.sql
+
 # Arquivos de output de testes e dados gerados
 outputs/

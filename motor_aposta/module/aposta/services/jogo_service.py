@@ -1,14 +1,14 @@
 import random
-import pandas as pd
+
 import numpy as np
-from motor_aposta.module.aposta.dtos.calculo_dto import CalculoDTO
-from motor_aposta.module.aposta.dtos.probabilidade_dto import ProbabilidadeDTO
+
 from motor_aposta.module.aposta.dtos.tipo_jogo_premiacao_dto import TipoJogoPremiacaoDTO
 from motor_aposta.module.aposta.dtos.tipo_jogo_dto import TipoJogoDTO
 from motor_aposta.module.aposta.dtos.tipo_jogo_estrutura_dto import TipoJogoEstruturaDTO
 from motor_aposta.module.aposta.factories.sorteio_factory import SorteioFactory
 from motor_aposta.module.aposta.repositories.simulacao_repository import simulacao_repository
 from motor_aposta.module.aposta.repositories.tipo_jogo_repository import tipo_jogo_repository
+from motor_aposta.module.aposta.services.calculo_service import calcula_dezenas
 from motor_aposta.module.aposta.services.resultado_service import sorteio_by_id, gera_aposta, valida_resultado
 from motor_aposta.module.aposta.services.simulacao_service import gera_simulacao
 
@@ -42,10 +42,7 @@ def gera_jogo(id: int,
 
     dados = sorteio_by_id(id, False)
     sorteios = SorteioFactory.ConverterListaSorteio(dados)
-
-    numeros_por_sorteio = tipo_jogo.qt_dezena_resultado
     numeros_total = len(tipo_jogo_estrutura)
-
     n_sorteios = len(sorteios)
 
     dezenas_filtrar = 0
@@ -75,12 +72,6 @@ def gera_jogo(id: int,
                 qtde_adicional_repetido += 1
             index += 1
 
-    df = pd.DataFrame(sorteios, columns=[f"Num_{i+1}" for i in range(numeros_por_sorteio)])
-
-    # Unindo todas as colunas de sorteios em uma única série para contar a frequência de cada número
-    todos_numeros = pd.Series(df.values.ravel())
-    frequencia = todos_numeros.value_counts().sort_index().convert_dtypes(convert_integer=True)
-
     # Calcula a medio do desvio padrão
     estatisticas = []
     for i, row in enumerate(sorteios):
@@ -89,65 +80,11 @@ def gera_jogo(id: int,
 
     desvio_total = sum(desvio for desvio in estatisticas)
     media_desvio = (desvio_total / len(sorteios)).__round__(2)
-
-    # Análise de Probabilidade Empírica
-    total_sorteios = n_sorteios * numeros_por_sorteio
-    probabilidades_empiricas = (frequencia / total_sorteios).convert_dtypes(convert_integer=True)
-
-    probabilidades = []
-    lista_probabilidade = (probabilidades_empiricas * 100).round(2).to_frame().T.to_dict()
-    for key in lista_probabilidade:
-        probabilidades.append(ProbabilidadeDTO(numero=key, probabilidade=lista_probabilidade[key]['count']))
-
-    calculos = []
-    qtde_ausencia_recente = 0
-    qtde_ausencia_total = 0
-    qtde_repeticao_recente = 0
-    qtde_repeticao_total = 0
-    index = 0
-    finaliza_ausencia_recente: bool
-
-    for item in tipo_jogo_estrutura:
-        finaliza_ausencia_recente = False
-        qtde_ausencia_recente = 0
-        qtde_ausencia_total = 0
-        qtde_repeticao_recente = 0
-        qtde_repeticao_total = 0
-        index = 1
-
-        for resultado in sorteios:
-            # valida ausência
-            if (not item.nr_estrutura_jogo in resultado):
-                qtde_ausencia_total += 1
-                if (not finaliza_ausencia_recente):
-                    qtde_ausencia_recente += 1
-            else:
-                finaliza_ausencia_recente = True
-
-            # valida repetição
-            if (item.nr_estrutura_jogo in resultado):
-                qtde_repeticao_total += 1
-                if (index > 0):
-                    qtde_repeticao_recente = index
-                    index += 1
-            else:
-                index = 0
-
-        for res in probabilidades: 
-            if res.numero == item.nr_estrutura_jogo:
-                prob = res.probabilidade
-
-        calculos.append(
-            CalculoDTO(
-                NrDezena=item.nr_estrutura_jogo,
-                QtAusenciaRecente=qtde_ausencia_recente,
-                QtAusenciaTotal=qtde_ausencia_total,
-                QtRepeticaoRecente=qtde_repeticao_recente,
-                QtRepeticaoTotal=qtde_repeticao_total,
-                VlProbabilidade=(100-(prob)-qtde_repeticao_recente)
-                )
-        )
-
+    
+    # Service de Calculos
+    calculos = calcula_dezenas(id)
+    
+    # Repositório de simulação
     simulacao = simulacao_repository.busca_ultima_simulacao(id_tipo_jogo=id,
                                                             id_usuario=id_usuario,
                                                             nr_concurso_aposta=tipo_jogo.nr_concurso_max)

@@ -12,6 +12,21 @@ class tipo_jogo_repository:
         super().__init__(**kwargs)
         register(cls)
 
+    def lista_tipo_jogo() -> TipoJogoDTO:
+        data = conector.read_data(f"""SELECT id_tipo_jogo
+                                           , nm_tipo_jogo
+                                           , qt_dezena_resultado
+                                           , qt_dezena_minima_aposta
+                                           , qt_dezena_maxima_aposta
+                                           , nm_route
+                                        FROM tipo_jogo
+                                       ORDER BY id_tipo_jogo"""
+                                )
+        if (data == None):
+            return None
+        
+        return TipoJogoFactory.ConverterParaLista(data)
+
     def busca_tipo_jogo(id_tipo_jogo: int) -> TipoJogoDTO:
         data = conector.read_data(f"""SELECT t.*
                                                 , COALESCE(c.nr_concurso_max,0) + 1 AS nr_concurso_max
@@ -26,7 +41,7 @@ class tipo_jogo_repository:
         if (data == None):
             return None
         
-        return TipoJogoFactory.ConverterDto(data)
+        return TipoJogoFactory.ConverterParaDto(data)
     
     def busca_tipo_jogo_estrutura(id_tipo_jogo:int) -> TipoJogoEstruturaDTO:
         data = conector.read_data(f"""SELECT id_tipo_jogo

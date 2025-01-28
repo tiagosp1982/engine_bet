@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -15,7 +16,7 @@ class TipoJogoDTO(BaseModel):
 
     nm_route: str
         
-    nr_concurso_max: int
+    nr_concurso_max: Optional[int] = 0
 
     def add(self,obj):
       assert isinstance(obj,TipoJogoDTO)

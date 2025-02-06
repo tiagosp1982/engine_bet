@@ -1,6 +1,7 @@
 import numpy as np
 import random
 from motor_aposta.module.aposta.dtos.calculo_dto import CalculoDTO
+from motor_aposta.module.aposta.dtos.sorteio_dto import SorteioAgrupadoDTO, SorteioDTO
 from motor_aposta.module.aposta.factories.simulacao_factory import SimulacaoFactory
 from motor_aposta.module.aposta.factories.sorteio_factory import SorteioFactory
 from motor_aposta.module.aposta.repositories.sorteio_repository import sorteio_repository
@@ -27,7 +28,7 @@ async def confere_resultado_consolidado(id_tipo_jogo: int, apostas: str) -> dict
     lista_total = confere_resultado(id_tipo_jogo, apostas)
     return lista_total
 
-def sorteio_by_id(id_tipo_jogo: int, ciclo: bool, historico: bool = False) -> dict:
+def sorteio_por_id(id_tipo_jogo: int, ciclo: bool, historico: bool = False) -> dict:
     tipo_jogo_estrutura = tipo_jogo_repository.busca_tipo_jogo_estrutura(id_tipo_jogo)
     limit_data = len(tipo_jogo_estrutura)
     if (historico):
@@ -72,7 +73,7 @@ def confere_resultado(id_tipo_jogo: int, apostas: str):
     premiacoes = tipo_jogo_repository.busca_dezenas_premiacao(id_tipo_jogo)
     lista_total = []
     
-    aposta = apostas.split(', ')
+    aposta = apostas.split(',')
     lista_resultado = calcula_resultados(aposta, sorteios)
     for p in premiacoes:
         prm = p[0]
@@ -89,7 +90,7 @@ def calcula_resultados(aposta: list[str], sorteios: dict) -> list:
     resultados = []
     for s in sorteios:
         sorteioString = str(s[1])
-        sorteio = sorteioString.split(', ')
+        sorteio = sorteioString.split(',')
         resultado = [elemento for elemento in aposta if elemento in sorteio]
         resultados.append(len(resultado))
     return resultados
@@ -143,5 +144,9 @@ def valida_resultado(id_tipo_jogo: int,
         return resultado
     else:
         return False
+def busca_sorteio_por_concurso(id_tipo_jogo: int, nr_concurso_inicial: int, nr_concurso_final: int) -> list[SorteioAgrupadoDTO]:
+    sorteios = sorteio_repository.busca_sorteio_por_concurso(id_tipo_jogo, nr_concurso_inicial, nr_concurso_final)
+    return [SorteioAgrupadoDTO(**sorteio) for sorteio in sorteios]
 
-    
+async def lista_sorteios_por_concurso (id_tipo_jogo: int, nr_concurso_inicial: int, nr_concurso_final: int) -> list[SorteioAgrupadoDTO]:
+    return busca_sorteio_por_concurso(id_tipo_jogo, nr_concurso_inicial, nr_concurso_final)

@@ -80,3 +80,14 @@ class sorteio_repository:
                                       ORDER BY nr_concurso DESC"""
                                 )
         return data
+
+    def busca_sorteio_por_concurso(id_tipo_jogo: int, nr_concurso_inicial: int, nr_concurso_final: int) -> dict:
+        data = conector.read_data_new(f"""SELECT nr_concurso
+                                          , dezenas as nr_dezenas
+                                       FROM vw_sorteio
+                                      WHERE id_tipo_jogo={id_tipo_jogo} 
+                                        AND nr_concurso BETWEEN {nr_concurso_inicial} AND {nr_concurso_final}
+                                      ORDER BY nr_concurso DESC"""
+                                )
+
+        return data

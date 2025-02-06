@@ -1,4 +1,5 @@
 import psycopg2
+import psycopg2.extras
 import os
 from dotenv import load_dotenv
 
@@ -29,6 +30,26 @@ class conector:
                 conexao.close()
 
             return list
+        except Exception as e:
+            print("Erro ao conectar ou operar no banco de dados1:", e)
+            
+    def read_data_new(query) -> dict:
+        try:
+            conexao = psycopg2.connect(DATABASE_URL)
+
+            # Criar um cursor para executar comandos SQL
+            cursor = conexao.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+            # Execute operações no banco de dados aqui...
+            cursor.execute(query)
+            result = [dict(row) for row in cursor.fetchall()]
+
+            if cursor:
+                cursor.close()
+            if conexao:
+                conexao.close()
+
+            return result
         except Exception as e:
             print("Erro ao conectar ou operar no banco de dados1:", e)
 

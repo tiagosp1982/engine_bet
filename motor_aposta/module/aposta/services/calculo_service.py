@@ -5,14 +5,14 @@ from motor_aposta.module.aposta.dtos.tipo_jogo_dto import TipoJogoDTO
 from motor_aposta.module.aposta.dtos.tipo_jogo_estrutura_dto import TipoJogoEstruturaDTO
 from motor_aposta.module.aposta.factories.sorteio_factory import SorteioFactory
 from motor_aposta.module.aposta.repositories.tipo_jogo_repository import tipo_jogo_repository
-from motor_aposta.module.aposta.services.resultado_service import sorteio_by_id
+from motor_aposta.module.aposta.services.resultado_service import busca_sorteio_por_concurso
 
 
-async def calcular_dezenas(_id_tipo_jogo: int) -> dict:
-    calculos = calcula_dezenas(_id_tipo_jogo)
+async def calcular_dezenas(_id_tipo_jogo: int, _nr_concurso_inicial: int, _nr_concurso_final: int) -> dict:
+    calculos = calcula_dezenas(_id_tipo_jogo, _nr_concurso_inicial, _nr_concurso_final)
     return calculos
 
-def calcula_dezenas(_id_tipo_jogo: int) -> dict:
+def calcula_dezenas(_id_tipo_jogo: int, _nr_concurso_inicial: int, _nr_concurso_final: int) -> dict:
     tipo_jogo: TipoJogoDTO
     tipo_jogo_estrutura: TipoJogoEstruturaDTO
     calculos = []
@@ -28,8 +28,8 @@ def calcula_dezenas(_id_tipo_jogo: int) -> dict:
     tipo_jogo_estrutura = tipo_jogo_repository.busca_tipo_jogo_estrutura(_id_tipo_jogo)
     
     # Informações do sorteio
-    dados = sorteio_by_id(_id_tipo_jogo, False)
-    sorteios = SorteioFactory.ConverterListaSorteio(dados)
+    dados = busca_sorteio_por_concurso(_id_tipo_jogo, _nr_concurso_inicial, _nr_concurso_final)
+    sorteios = [SorteioFactory.ConverterListStrParaListInt(d.nr_dezenas) for d in dados]
     
     numeros_por_sorteio = tipo_jogo.qt_dezena_resultado
     df = pd.DataFrame(sorteios, columns=[f"Num_{i+1}" for i in range(numeros_por_sorteio)])

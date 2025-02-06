@@ -33,3 +33,17 @@ class concurso_repository:
         command = instruction.format(id_tipo_jogo)
         exec = conector.write_data(command)
         return exec
+
+    def busca_concurso(_id_tipo_jogo: int) -> dict:
+        data = conector.read_data_new(f"""select id_tipo_jogo
+                                          	   , nr_concurso
+                                          	   , dt_concurso
+                                          	   , vl_acumulado
+                                          	   , nr_proximo_concurso
+                                          	   , dt_proximo_concurso
+                                          	   , nr_ganhador 
+                                            from concurso c 
+                                           where id_tipo_jogo = {_id_tipo_jogo}
+                                           order by nr_concurso """
+                                )
+        return data

@@ -4,9 +4,9 @@ from motor_aposta.module.aposta.services.jogo_service import gera_jogo
 id = 1
 id_usuario = 1
 qtde_aposta = 1
-qtde_dezena_aposta = 15
+qtde_dezena_aposta = 16
 somente_ausente = False
-amarrar_jogos = False
+amarrar_jogos = True
 
 jogo = gera_jogo(id=id,
                  id_usuario=id_usuario,

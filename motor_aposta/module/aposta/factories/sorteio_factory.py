@@ -42,3 +42,11 @@ class SorteioFactory():
             sorteios.append(item)
 
         return sorteios
+
+    def ConverterListStrParaListInt(numerosArray: str) -> dict:
+        listaInt = []
+        listaStr = numerosArray.split(',')
+        for n in listaStr:
+            listaInt.append(int(n))
+
+        return listaInt

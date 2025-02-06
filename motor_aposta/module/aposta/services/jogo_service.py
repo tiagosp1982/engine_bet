@@ -9,7 +9,7 @@ from motor_aposta.module.aposta.factories.sorteio_factory import SorteioFactory
 from motor_aposta.module.aposta.repositories.simulacao_repository import simulacao_repository
 from motor_aposta.module.aposta.repositories.tipo_jogo_repository import tipo_jogo_repository
 from motor_aposta.module.aposta.services.calculo_service import calcula_dezenas
-from motor_aposta.module.aposta.services.resultado_service import sorteio_by_id, gera_aposta, valida_resultado
+from motor_aposta.module.aposta.services.resultado_service import sorteio_por_id, gera_aposta, valida_resultado
 from motor_aposta.module.aposta.services.simulacao_service import gera_simulacao
 
 def gera_jogo(id: int,
@@ -40,7 +40,7 @@ def gera_jogo(id: int,
         print('Quantidade de dezenas da aposta é maior do que a quantidade máxima permitida.')
         exit()
 
-    dados = sorteio_by_id(id, False)
+    dados = sorteio_por_id(id, False)
     sorteios = SorteioFactory.ConverterListaSorteio(dados)
     numeros_total = len(tipo_jogo_estrutura)
     n_sorteios = len(sorteios)

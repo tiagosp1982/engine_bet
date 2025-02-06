@@ -21,7 +21,7 @@ class usuario_repository:
                                        WHERE ds_email = '{_ds_email}'
                                          AND ds_hashsenha = '{_ds_senha}'"""
                                 )
-        if (data == None):
+        if (data == None or len(data) == 0):
             return None
 
         return UsuarioFactory.ConverterDto(data)

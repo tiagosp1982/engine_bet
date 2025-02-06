@@ -1,3 +1,4 @@
+import datetime
 from motor_aposta.module.aposta.factories.sorteio_factory import SorteioFactory
 from motor_aposta.module.aposta.repositories.tipo_jogo_repository import tipo_jogo_repository
 from motor_aposta.module.caixa.api.atualiza_resultado import atualiza_resultado
@@ -30,7 +31,15 @@ async def importa_resultado_por_tipo_jogo(_tipo_jogo: int) -> dict:
             numero_proximo_concurso = result["numeroConcursoProximo"]
             ganhador = result["listaRateioPremio"][0]["numeroDeGanhadores"]
             id = tipo_jogo_dto.id_tipo_jogo
-            objconcurso = ConcursoDTO(id, numero_concurso, data, valor, numero_proximo_concurso, data_proximo_concurso, ganhador)
+            
+            objconcurso = ConcursoDTO(id_tipo_jogo=id,
+                                      nr_concurso=numero_concurso,
+                                      dt_concurso=datetime.datetime.strptime(data, "%d/%m/%Y").strftime("%Y-%m-%d"),
+                                      vl_acumulado=valor,
+                                      nr_proximo_concurso=numero_proximo_concurso,
+                                      dt_proximo_concurso=datetime.datetime.strptime(data_proximo_concurso, "%d/%m/%Y").strftime("%Y-%m-%d"),
+                                      nr_ganhador=ganhador
+                                    )
             concurso_repository.atualiza_concurso(objconcurso)
             
             # dados do resultados

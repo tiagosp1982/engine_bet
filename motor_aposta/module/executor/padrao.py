@@ -3,11 +3,11 @@ from collections import Counter
 
 from motor_aposta.module.aposta.dtos.sorteio_dto import SorteioDTO
 from motor_aposta.module.aposta.factories.sorteio_factory import SorteioFactory
-from motor_aposta.module.aposta.services.resultado_service import sorteio_by_id
+from motor_aposta.module.aposta.services.resultado_service import sorteio_por_id
 
 # Exemplo de base histórica com conjuntos de 7 números
 id = 1
-dados = sorteio_by_id(id, False, True)
+dados = sorteio_por_id(id, False, True)
 historical_data = SorteioFactory.ConverterListaSorteio(dados)
 
 # Função para identificar padrões básicos

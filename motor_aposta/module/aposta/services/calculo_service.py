@@ -86,7 +86,7 @@ def calcula_dezenas(_id_tipo_jogo: int, _nr_concurso_inicial: int, _nr_concurso_
                 QtAusenciaTotal=qtde_ausencia_total,
                 QtRepeticaoRecente=qtde_repeticao_recente,
                 QtRepeticaoTotal=qtde_repeticao_total,
-                VlProbabilidade=(100-(prob)-qtde_repeticao_recente)
+                VlProbabilidade=(100-(0 if prob == 0 else prob)-qtde_repeticao_recente)
             )
         )
 

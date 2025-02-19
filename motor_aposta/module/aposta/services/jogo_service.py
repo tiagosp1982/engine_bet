@@ -82,7 +82,7 @@ def gera_jogo(id: int,
     media_desvio = (desvio_total / len(sorteios)).__round__(2)
     
     # Service de Calculos
-    calculos = calcula_dezenas(id)
+    calculos = calcula_dezenas(id, tipo_jogo.nr_concurso_max - numeros_total, tipo_jogo.nr_concurso_max)
     
     # Repositório de simulação
     simulacao = simulacao_repository.busca_ultima_simulacao(id_tipo_jogo=id,

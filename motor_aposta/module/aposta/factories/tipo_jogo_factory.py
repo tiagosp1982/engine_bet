@@ -24,3 +24,11 @@ class TipoJogoFactory():
             lista.append(obj)
 
         return lista
+
+    def DTO(obj) -> TipoJogoDTO:
+        return TipoJogoDTO(id_tipo_jogo=obj[0][0],
+                            nm_tipo_jogo=obj[0][1],
+                            qt_dezena_resultado=obj[0][2],
+                            qt_dezena_minima_aposta=obj[0][3],
+                            qt_dezena_maxima_aposta=obj[0][4],
+                            nm_route=obj[0][5])

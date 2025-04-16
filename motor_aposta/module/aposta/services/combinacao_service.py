@@ -72,4 +72,5 @@ def atualiza_combinacao_sorteio(_id_tipo_jogo: int, _nr_dezena_combinacao: int, 
                                        id_combinacao=combinacao[0],
                                        nr_concurso=sorteio[0])
             combinacao_repository.atualizacao_combinacao_sorteio(obj)
+            print(f'Combinação encontrada para o concurso: {sorteio[0]}\n')
     

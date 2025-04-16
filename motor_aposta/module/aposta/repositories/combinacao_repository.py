@@ -25,7 +25,7 @@ class combinacao_repository:
                                         from combinacao c 
                                        where id_tipo_jogo = {_id_tipo_jogo}
                                          and nr_qtde_dezena = {_nr_qtde_dezena} 
-                                         and flg_improvavel = 'S'""")
+                                         and flg_improvavel = 'N'""")
         if (data == None):
             return None
 

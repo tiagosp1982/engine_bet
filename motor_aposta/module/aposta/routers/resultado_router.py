@@ -5,14 +5,14 @@ from motor_aposta.module.aposta.services.resultado_service import confere_result
 router = APIRouter(prefix="/resultado")
 
 
-@router.get("/detalhado")
-async def resultado_detalhado(tipo_jogo: int, lista_bet: str):
-    response = await confere_resultado_detalhado(tipo_jogo, lista_bet)
+@router.get("/detalhado/{id_tipo_jogo}/{nr_jogo}")
+async def resultado_detalhado(id_tipo_jogo: int, nr_jogo: str):
+    response = await confere_resultado_detalhado(id_tipo_jogo, nr_jogo)
     return response
 
-@router.get("/consolidado")
-async def resultado_consolidado(id_tipo_jogo: int, lista_bet: str):
-    response = await confere_resultado_consolidado(id_tipo_jogo, lista_bet)
+@router.get("/consolidado/{id_tipo_jogo}/{nr_jogo}")
+async def resultado_consolidado(id_tipo_jogo: int, nr_jogo: str):
+    response = await confere_resultado_consolidado(id_tipo_jogo, nr_jogo)
     return response
 
 @router.get("/lista/{id_tipo_jogo}/{nr_concurso_inicial}/{nr_concurso_final}")

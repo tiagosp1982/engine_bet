@@ -7,12 +7,14 @@ from motor_aposta.module.aposta.routers import usuario_router
 from motor_aposta.module.aposta.routers import tipo_jogo_router
 from motor_aposta.module.aposta.routers import calculo_router
 from motor_aposta.module.aposta.routers import concurso_router
+from motor_aposta.module.aposta.routers import aposta_router
 
 
 app = FastAPI()
 
 
 app.include_router(atualiza_resultado_router.router)
+app.include_router(aposta_router.router)
 app.include_router(resultado_router.router)
 app.include_router(simulacao_router.router)
 app.include_router(usuario_router.router)

@@ -5,7 +5,7 @@ from motor_aposta.module.aposta.services.importacao_service import importa_resul
 router = APIRouter(prefix="/resultado")
 
 
-@router.post("/atualizar")
-async def importa_resultado(tipo_jogo: int):
-    response = await importa_resultado_por_tipo_jogo(tipo_jogo)
+@router.post("/atualizar/{id_tipo_jogo}")
+async def importa_resultado(id_tipo_jogo: int):
+    response = await importa_resultado_por_tipo_jogo(id_tipo_jogo)
     return response

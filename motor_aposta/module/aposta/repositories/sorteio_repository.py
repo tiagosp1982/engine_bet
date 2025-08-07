@@ -1,6 +1,7 @@
 from atexit import register
 from motor_aposta.infrastructure.database.conector import conector
 from motor_aposta.module.aposta.factories.sorteio_factory import SorteioFactory
+from motor_aposta.module.aposta.dtos.sorteio_dto import SorteadoDto, SorteioMolduraCentroDTO
 
 
 class sorteio_repository:
@@ -89,5 +90,39 @@ class sorteio_repository:
                                         AND nr_concurso BETWEEN {nr_concurso_inicial} AND {nr_concurso_final}
                                       ORDER BY nr_concurso DESC"""
                                 )
+
+        return data
+
+    def busca_resultado_por_concurso(id_tipo_jogo:int, nr_concurso:int) -> list[SorteadoDto]:
+        data = conector.read_data_new(f"""select nr_sorteado
+                                            from sorteio s 
+                                           where nr_concurso = {nr_concurso}
+                                             and id_tipo_jogo = {id_tipo_jogo}"""
+                                    )
+        if (data == None):
+            return None
+        return [SorteadoDto(**d) for d in data]
+
+    def busca_resultado_moldura(id_tipo_jogo:int) -> dict:
+        data = conector.read_data_new(f"""select m.nr_concurso
+                                               , m.ds_dezenas
+                                               , m.id_tipo_jogo
+                                            from vw_resultado_moldura m
+                                           where m.id_tipo_jogo = {id_tipo_jogo}"""
+                                    )
+        if (data == None):
+            return None
+
+        return data
+
+    def busca_resultado_centro(id_tipo_jogo:int) -> dict:
+        data = conector.read_data_new(f"""select c.nr_concurso
+                                               , c.ds_dezenas
+                                               , c.id_tipo_jogo
+                                            from vw_resultado_centro c
+                                           where c.id_tipo_jogo = {id_tipo_jogo}"""
+                                    )
+        if (data == None):
+            return None
 
         return data

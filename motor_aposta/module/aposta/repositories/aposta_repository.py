@@ -2,6 +2,7 @@ from atexit import register
 from motor_aposta.infrastructure.database.conector import conector
 from motor_aposta.module.aposta.dtos.aposta_dto import ApostaDto
 from motor_aposta.module.aposta.dtos.aposta_item_dto import ApostaItemDto
+from motor_aposta.module.aposta.dtos.aposta_carrinho_dto import ApostaCarrinhoDto
 
 
 class aposta_repository:
@@ -37,5 +38,21 @@ class aposta_repository:
                                       )
         if (data == None or len(data) == 0):
             return None
+        dto = [ApostaDto(**d) for d in data]
+        return dto[0]
 
-        return [ApostaDto(**d) for d in data]
+    def busca_aposta_carrinho(id_tipo_jogo: int, id_usuario: int, nr_concurso: int) -> ApostaCarrinhoDto:
+        data = conector.read_data_new(f"""SELECT id_aposta
+                                               , id_usuario 
+                                               , id_tipo_jogo 
+                                               , nr_concurso
+                                               , jogo
+                                            FROM vw_aposta a
+                                           WHERE id_tipo_jogo = {id_tipo_jogo}
+                                             AND id_usuario = {id_usuario}
+                                             AND nr_concurso = {nr_concurso}
+                                           ORDER BY id_aposta"""
+                                      )
+        if (data == None or len(data) == 0):
+            return None
+        return [ApostaCarrinhoDto(**d) for d in data]

@@ -11,8 +11,10 @@ from motor_aposta.module.aposta.repositories.tipo_jogo_repository import tipo_jo
 from motor_aposta.module.aposta.services.calculo_service import calcula_dezenas
 from motor_aposta.module.aposta.services.resultado_service import sorteio_por_id, gera_aposta, valida_resultado
 from motor_aposta.module.aposta.services.simulacao_service import gera_simulacao
+from motor_aposta.module.aposta.services.dado_moldura_service import DadoMolduraService
+from motor_aposta.module.aposta.services.dado_centro_service import DadoCentroService
 
-def gera_jogo(id: int,
+def gera_jogo_v1(id: int,
               id_usuario: int,
               qtde_aposta: int,
               qtde_dezena_aposta: int,
@@ -29,8 +31,8 @@ def gera_jogo(id: int,
     tipo_jogo_premiacao = tipo_jogo_repository.busca_tipo_jogo_premiacao(id)
 
     qtde_maxima_dezenas_repetidas_entre_jogos = tipo_jogo_premiacao.qt_dezena_acerto
-    if not (amarrar_jogos):
-        qtde_maxima_dezenas_repetidas_entre_jogos -= 1
+    # if not (amarrar_jogos):
+    #     qtde_maxima_dezenas_repetidas_entre_jogos -= 1
 
     if (qtde_dezena_aposta < tipo_jogo.qt_dezena_minima_aposta):
         print('Quantidade de dezenas da aposta é menor do que a quantidade mínima permitida.')
@@ -82,7 +84,7 @@ def gera_jogo(id: int,
     media_desvio = (desvio_total / len(sorteios)).__round__(2)
     
     # Service de Calculos
-    calculos = calcula_dezenas(id, tipo_jogo.nr_concurso_max - numeros_total, tipo_jogo.nr_concurso_max)
+    calculos = calcula_dezenas(id, tipo_jogo.nr_concurso_max - 5, tipo_jogo.nr_concurso_max)
     
     # Repositório de simulação
     simulacao = simulacao_repository.busca_ultima_simulacao(id_tipo_jogo=id,
@@ -99,8 +101,8 @@ def gera_jogo(id: int,
             else:
                 index = random.randrange(0,1)
 
-            qt_filtrar = random.randrange(dezenas_filtrar - index, 
-                                            dezenas_filtrar + index)
+            qt_filtrar = random.randrange(1 if index == 0 else dezenas_filtrar - index, 
+                                           2 if index == 0 else dezenas_filtrar + index)
 
             qt_filtrar_ausente=(tipo_jogo.qt_dezena_minima_aposta-qt_filtrar)+qtde_adicional_ausente
             qt_filtrar_repetido=(qt_filtrar+qtde_adicional_repetido)
@@ -115,7 +117,8 @@ def gera_jogo(id: int,
                                             qtde_maxima_repetida_simulacao_resultado=qtde_maxima_dezenas_repetidas_entre_jogos,
                                             desvio_medio=media_desvio,
                                             sempre_amarrar_jogos=amarrar_jogos,
-                                            id_usuario=id_usuario
+                                            id_usuario=id_usuario,
+                                            valida_desvio_medio=True
                                             )
 
         if (grava_simulacao):
@@ -123,3 +126,53 @@ def gera_jogo(id: int,
                                        id_usuario=id_usuario,
                                         jogo=",".join(map(str, jogo)))
         return jogo
+
+def gera_jogo_v2(id_tipo_jogo: int,
+              id_usuario: int,
+              qtde_aposta: int,
+              qtde_dezena_aposta: int):
+
+    jogos = []
+    grava_simulacao = True
+    tipo_jogo: TipoJogoDTO
+    tipo_jogo_premiacao: TipoJogoPremiacaoDTO
+
+    tipo_jogo = tipo_jogo_repository.busca_tipo_jogo(id_tipo_jogo)
+    tipo_jogo_premiacao = tipo_jogo_repository.busca_tipo_jogo_premiacao(id_tipo_jogo)
+
+    simulacao = simulacao_repository.busca_ultima_simulacao(id_tipo_jogo=id,
+                                                            id_usuario=id_usuario,
+                                                            nr_concurso_aposta=tipo_jogo.nr_concurso_max)
+
+    id_simulacao = (simulacao.id_simulacao if simulacao else 0)
+    for i in range(qtde_aposta):
+        jogo_invalido = True
+        id_simulacao += 1
+        i += 1
+        while jogo_invalido:
+            dezenas_moldura = DadoMolduraService.dado_moldura(id_tipo_jogo=id_tipo_jogo,
+                                                            qtde_dezenas=qtde_dezena_aposta)
+
+            dezenas_centro = DadoCentroService.dado_centro(id_tipo_jogo=id_tipo_jogo,
+                                                           qtde_moldura=len(dezenas_moldura),
+                                                           qtde_dezenas=qtde_dezena_aposta)
+
+            jogo = sorted(dezenas_moldura + dezenas_centro)
+
+            jogo_invalido = valida_resultado(id_tipo_jogo=id_tipo_jogo,
+                                                apostas=",".join(map(str, jogo)),
+                                                qtde_maxima_repetida_simulacao_resultado=tipo_jogo_premiacao.qt_dezena_acerto + 2,
+                                                desvio_medio=None,
+                                                sempre_amarrar_jogos=False,
+                                                id_usuario=id_usuario,
+                                                valida_desvio_medio=False
+                                                )
+
+        if (grava_simulacao):
+            simulacao = gera_simulacao(id_tipo_jogo=id_tipo_jogo,
+                                        id_usuario=id_usuario,
+                                        jogo=",".join(map(str, jogo)))
+
+        jogos.append(jogo)
+
+    return jogos

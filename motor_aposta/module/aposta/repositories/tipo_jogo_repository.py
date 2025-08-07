@@ -28,23 +28,23 @@ class tipo_jogo_repository:
         return TipoJogoFactory.ConverterParaLista(data)
 
     def lista_tipo_jogo_id(id_tipo_jogo:int) -> TipoJogoDTO:
-        data = conector.read_data(f"""SELECT id_tipo_jogo
-                                           , nm_tipo_jogo
-                                           , qt_dezena_resultado
-                                           , qt_dezena_minima_aposta
-                                           , qt_dezena_maxima_aposta
-                                           , nm_route
-                                        FROM tipo_jogo
-                                       WHERE id_tipo_jogo = {id_tipo_jogo}
-                                       ORDER BY id_tipo_jogo"""
-                                )
+        data = conector.read_data_new(f"""SELECT id_tipo_jogo
+                                               , nm_tipo_jogo
+                                               , qt_dezena_resultado
+                                               , qt_dezena_minima_aposta
+                                               , qt_dezena_maxima_aposta
+                                               , nm_route
+                                            FROM tipo_jogo
+                                           WHERE id_tipo_jogo = {id_tipo_jogo}
+                                           ORDER BY id_tipo_jogo"""
+                                    )
         if (data == None):
             return None
         
-        return TipoJogoFactory.DTO(data)
+        return TipoJogoDTO(**data[0])
 
     def busca_tipo_jogo(id_tipo_jogo: int) -> TipoJogoDTO:
-        data = conector.read_data(f"""SELECT t.*
+        data = conector.read_data_new(f"""SELECT t.*
                                                 , COALESCE(c.nr_concurso_max,0) + 1 AS nr_concurso_max
                                              FROM public.tipo_jogo t
                                                   LEFT JOIN ( SELECT MAX(nr_concurso) AS nr_concurso_max
@@ -56,12 +56,14 @@ class tipo_jogo_repository:
                                       )
         if (data == None):
             return None
-        
-        return TipoJogoFactory.ConverterParaDto(data)
+
+        return TipoJogoDTO(**data[0])
+        # return TipoJogoFactory.ConverterParaDto(data)
     
     def busca_tipo_jogo_estrutura(id_tipo_jogo:int) -> TipoJogoEstruturaDTO:
-        data = conector.read_data(f"""SELECT id_tipo_jogo
+        data = conector.read_data_new(f"""SELECT id_tipo_jogo
                                                , nr_estrutura_jogo
+                                               , flg_centro_moldura
                                             FROM tipo_jogo_estrutura 
                                            WHERE id_tipo_jogo={id_tipo_jogo}
                                            ORDER BY nr_estrutura_jogo"""
@@ -69,12 +71,11 @@ class tipo_jogo_repository:
         if (data == None):
             return None
 
-        return [TipoJogoEstruturaDTO(id_tipo_jogo=res[0],
-                                    nr_estrutura_jogo=res[1]) for res in data]
+        return [TipoJogoEstruturaDTO(**res) for res in data]
 
     def busca_tipo_jogo_premiacao(id_tipo_jogo:int) -> TipoJogoPremiacaoDTO:
         obj: TipoJogoPremiacaoDTO
-        data = conector.read_data(f"""SELECT id_tipo_jogo 
+        data = conector.read_data_new(f"""SELECT id_tipo_jogo 
                                                , min(qt_dezena_acerto) as qt_dezena_acerto
                                             FROM tipo_jogo_premiacao tjp 
                                            WHERE id_tipo_jogo = {id_tipo_jogo}
@@ -83,9 +84,7 @@ class tipo_jogo_repository:
         if (data == None):
             return None
 
-        obj = [TipoJogoPremiacaoDTO(id_tipo_jogo=d[0],
-                                    qt_dezena_acerto=d[1]) for d in data]
-        return obj[0]
+        return TipoJogoPremiacaoDTO(**data[0])
 
     def busca_dezenas_premiacao(id_tipo_jogo: int) -> dict:
         data = conector.read_data(f"""SELECT qt_dezena_acerto 

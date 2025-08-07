@@ -15,5 +15,15 @@ class SorteioDTO:
 class SorteioAgrupadoDTO(BaseModel):
     nr_concurso: int
     nr_dezenas: str
+
+class SorteadoDto(BaseModel):
+    nr_sorteado:int
+
+class SorteioMolduraCentroDTO(BaseModel):
+    nr_concurso: int
+
+    ds_dezenas: str
+
+    id_tipo_jogo: int
     
     

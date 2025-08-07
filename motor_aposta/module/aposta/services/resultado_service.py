@@ -38,9 +38,9 @@ def sorteio_por_id(id_tipo_jogo: int, ciclo: bool, historico: bool = False) -> d
     if (ciclo):
         sorteio = sorteio_repository.busca_sorteio_por_ciclo(id_tipo_jogo)
         if (sorteio == None):
-            sorteio = sorteio_repository.busca_sorteio(id_tipo_jogo, limit_data)
+            sorteio = sorteio_repository.busca_sorteio(id_tipo_jogo, 5)
     else:
-        sorteio = sorteio_repository.busca_sorteio(id_tipo_jogo, limit_data)
+        sorteio = sorteio_repository.busca_sorteio(id_tipo_jogo, 5)
     
     return SorteioFactory.ConverterDto(id_tipo_jogo, sorteio)
 
@@ -50,7 +50,7 @@ def gera_aposta(calculos: list[CalculoDTO],
                      somente_ausente: bool) -> dict:
    
     ausente = [c for c in calculos if c.QtAusenciaRecente > 0]
-    ausente = sorted(ausente, key=lambda p: p.QtAusenciaRecente, reverse=True)
+    ausente = sorted(ausente, key=lambda p: p.VlProbabilidade, reverse=True)
     ausente = [a.NrDezena for a in ausente]
     if (qtde_filtrar_ausente > len(ausente)):
         sobra = qtde_filtrar_ausente - (len(ausente) - 1)
@@ -58,7 +58,7 @@ def gera_aposta(calculos: list[CalculoDTO],
         qtde_filtrar_repetido = qtde_filtrar_repetido + sobra
 
     repeticao = [c for c in calculos if c.QtAusenciaRecente == 0 and c.QtRepeticaoRecente > 0 and c.QtRepeticaoRecente <= qtde_filtrar_repetido]
-    repeticao = sorted(repeticao, key=lambda p: p.QtRepeticaoRecente, reverse=True)
+    repeticao = sorted(repeticao, key=lambda p: p.VlProbabilidade, reverse=True)
     repeticao = [a.NrDezena for a in repeticao]
 
     jogo_ausente = random.sample(ausente, k=(qtde_filtrar_ausente if not somente_ausente else qtde_filtrar_ausente + qtde_filtrar_repetido))
@@ -100,7 +100,8 @@ def valida_resultado(id_tipo_jogo: int,
                     qtde_maxima_repetida_simulacao_resultado: int = None,
                     desvio_medio: float = None,
                     sempre_amarrar_jogos: bool = False,
-                    id_usuario: int = 0
+                    id_usuario: int = 0,
+                    valida_desvio_medio: bool = False,
                     ):
 
     resultado: bool = False
@@ -117,15 +118,17 @@ def valida_resultado(id_tipo_jogo: int,
     if (resultado):
         return True
     
-    # Verifica desvio padrão da aposta gerada
-    perc_desvio = (desvio_medio * 0.2)
-    desvio_gerado = []
-    desvio_gerado.append([int(n) for n in aposta])
-    for i, row in enumerate(desvio_gerado):
-        dev = np.std(row)
-    # Verifica se o jogo gerado está dentro da média de desvio padrão + 20% ou na média de desvio padrão - 20%
-    if ((dev > (desvio_medio + perc_desvio).__round__(2)) or (dev < (desvio_medio - perc_desvio).__round__(2))):
-        return True
+    if (valida_desvio_medio):
+        # Verifica desvio padrão da aposta gerada
+        perc_desvio = (desvio_medio * 0.2)
+        desvio_gerado = []
+        desvio_gerado.append([int(n) for n in aposta])
+        for i, row in enumerate(desvio_gerado):
+            dev = np.std(row)
+        # Verifica se o jogo gerado está dentro da média de desvio padrão + 20% ou na média de desvio padrão - 20%
+        if ((dev > (desvio_medio + perc_desvio).__round__(2)) or (dev < (desvio_medio - perc_desvio).__round__(2))):
+            return True
+
     # Valida os jogos já gerados para esse concurso
     dados = simulacao_repository.busca_simulacao_item(id_tipo_jogo=id_tipo_jogo, 
                                                        id_usuario=id_usuario,
@@ -141,6 +144,8 @@ def valida_resultado(id_tipo_jogo: int,
         else:
             acerto_jogo_adicional = [s for s in lista_simulado if s > qtde_maxima_repetida_simulacao_resultado]
             resultado = (len(acerto_jogo_adicional) > 0)
+            # if resultado:
+            #     print(f'Aposta descartada: {aposta}')
         return resultado
     else:
         return False

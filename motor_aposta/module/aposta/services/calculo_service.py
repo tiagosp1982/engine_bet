@@ -29,7 +29,7 @@ def calcula_dezenas(_id_tipo_jogo: int, _nr_concurso_inicial: int, _nr_concurso_
     
     # Informações do sorteio
     dados = busca_sorteio_por_concurso(_id_tipo_jogo, _nr_concurso_inicial, _nr_concurso_final)
-    sorteios = [SorteioFactory.ConverterListStrParaListInt(d.nr_dezenas) for d in dados]
+    sorteios = [SorteioFactory.ConverterListStrParaListInt(d.dezenas) for d in dados]
     
     numeros_por_sorteio = tipo_jogo.qt_dezena_resultado
     df = pd.DataFrame(sorteios, columns=[f"Num_{i+1}" for i in range(numeros_por_sorteio)])

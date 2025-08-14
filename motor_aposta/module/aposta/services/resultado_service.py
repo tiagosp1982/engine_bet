@@ -17,7 +17,7 @@ async def confere_resultado_detalhado(id_tipo_jogo: int, apostas: str) -> dict:
 
     aposta = apostas.split(',')
     for s in sorteios:
-        sorteioString = str(s[1])
+        sorteioString = str(s["dezenas"])
         sorteio = sorteioString.split(',')
         resultado = [elemento for elemento in aposta if elemento in sorteio]
         lista_resultado.append({"Concurso": s[0], "Acertos": len(resultado)})
@@ -29,12 +29,6 @@ async def confere_resultado_consolidado(id_tipo_jogo: int, apostas: str) -> dict
     return lista_total
 
 def sorteio_por_id(id_tipo_jogo: int, ciclo: bool, historico: bool = False) -> dict:
-    tipo_jogo_estrutura = tipo_jogo_repository.busca_tipo_jogo_estrutura(id_tipo_jogo)
-    limit_data = len(tipo_jogo_estrutura)
-    if (historico):
-        tipo_jogo = tipo_jogo_repository.busca_tipo_jogo(id_tipo_jogo)
-        limit_data = tipo_jogo.nr_concurso_max
-
     if (ciclo):
         sorteio = sorteio_repository.busca_sorteio_por_ciclo(id_tipo_jogo)
         if (sorteio == None):
@@ -84,12 +78,29 @@ def confere_resultado(id_tipo_jogo: int, apostas: str):
             lista_total.append({"Dezenas": prm, "Acertos": 0})
     
     return lista_total
+
+def confere_resultado_por_concurso(id_tipo_jogo: int, apostas: str, nr_concurso: int):
+    sorteios = sorteio_repository.busca_sorteio_por_concurso(id_tipo_jogo, nr_concurso, nr_concurso)
+    premiacoes = tipo_jogo_repository.busca_dezenas_premiacao(id_tipo_jogo)
+    lista_total = []
+    
+    aposta = apostas.split(',')
+    lista_resultado = calcula_resultados(aposta, sorteios)
+    for p in premiacoes:
+        prm = p[0]
+        acertos = [acerto for acerto in lista_resultado if acerto == prm]
+        if (len(acertos)) > 0:
+            lista_total.append(acertos[0])
+
+    if not (lista_total):
+        lista_total.append(lista_resultado[0])
+    return lista_total
     
     
 def calcula_resultados(aposta: list[str], sorteios: dict) -> list:
     resultados = []
     for s in sorteios:
-        sorteioString = str(s[1])
+        sorteioString = str(s["dezenas"])
         sorteio = sorteioString.split(',')
         resultado = [elemento for elemento in aposta if elemento in sorteio]
         resultados.append(len(resultado))
@@ -106,9 +117,14 @@ def valida_resultado(id_tipo_jogo: int,
 
     resultado: bool = False
     tipo_jogo = tipo_jogo_repository.busca_tipo_jogo(id_tipo_jogo)
+    premiacao = tipo_jogo_repository.busca_tipo_jogo_premiacao(id_tipo_jogo)
     sorteios = sorteio_repository.busca_sorteio_agrupado(id_tipo_jogo)
+    ultimo_sorteio = sorteio_repository.busca_sorteio_por_concurso(id_tipo_jogo=id_tipo_jogo,
+                                                                   nr_concurso_inicial=tipo_jogo.nr_concurso_max - 1,
+                                                                   nr_concurso_final=tipo_jogo.nr_concurso_max - 1)
     aposta = apostas.split(',')
     lista_resultado = calcula_resultados(aposta, sorteios)
+    lista_ultimo_resultado = calcula_resultados(aposta, ultimo_sorteio)
     lista_simulado = []
 
     # Valida se o jogo já foi sorteado com a qtde máxima por tipo de jogo
@@ -116,6 +132,11 @@ def valida_resultado(id_tipo_jogo: int,
     resultado = (len(acerto) > 0)
     # Verifica se já foi sorteado
     if (resultado):
+        return True
+
+    # Valida se np último concurso a aposta já acerto mais do que o prêmio mínimo
+    acerto_ultimo_resultado = [a for a in lista_ultimo_resultado if a == premiacao.qt_dezena_acerto + 1]
+    if (len(acerto_ultimo_resultado) > 0):
         return True
     
     if (valida_desvio_medio):

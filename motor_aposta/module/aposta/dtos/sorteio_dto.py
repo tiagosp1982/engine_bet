@@ -14,7 +14,7 @@ class SorteioDTO:
 
 class SorteioAgrupadoDTO(BaseModel):
     nr_concurso: int
-    nr_dezenas: str
+    dezenas: str
 
 class SorteadoDto(BaseModel):
     nr_sorteado:int

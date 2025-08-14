@@ -12,14 +12,14 @@ def __init__(cls):
     pass
 
 async def cria_aposta(id_tipo_jogo: int, id_usuario: int, nr_jogo: str) -> dict:
-    gera_aposta(id_tipo_jogo=id_tipo_jogo, id_usuario=id_usuario, nr_jogo=nr_jogo)
+    grava_aposta(id_tipo_jogo=id_tipo_jogo, id_usuario=id_usuario, nr_jogo=nr_jogo)
 
 async def lista_aposta_carrinho(id_tipo_jogo: int, id_usuario: int, nr_concurso: int) -> dict:
     return lista_carrinho(id_tipo_jogo=id_tipo_jogo,
                         id_usuario=id_usuario,
                         nr_concurso=nr_concurso)  
 
-def gera_aposta(id_tipo_jogo: int, id_usuario: int, nr_jogo: str) -> dict:
+def grava_aposta(id_tipo_jogo: int, id_usuario: int, nr_jogo: str) -> dict:
     tipo_jogo = tipo_jogo_repository.busca_tipo_jogo(id_tipo_jogo)
     aposta_dto = aposta_repository.busca_ultima_aposta(id_tipo_jogo=id_tipo_jogo,
                                                         id_usuario=id_usuario,

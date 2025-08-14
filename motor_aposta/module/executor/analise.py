@@ -27,6 +27,8 @@ qtde_dezena_aposta = 17
 jogos = gera_jogo_v2(id_tipo_jogo=id_tipo_jogo,
                     id_usuario=id_usuario,
                     qtde_aposta=qtde_aposta,
-                    qtde_dezena_aposta=qtde_dezena_aposta)
+                    qtde_dezena_aposta=qtde_dezena_aposta,
+                    analisa_simulacao=False,
+                    grava_simulacao=True)
 
 print(jogos)

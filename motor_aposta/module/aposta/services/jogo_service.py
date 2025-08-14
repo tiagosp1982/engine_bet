@@ -8,6 +8,7 @@ from motor_aposta.module.aposta.dtos.tipo_jogo_estrutura_dto import TipoJogoEstr
 from motor_aposta.module.aposta.factories.sorteio_factory import SorteioFactory
 from motor_aposta.module.aposta.repositories.simulacao_repository import simulacao_repository
 from motor_aposta.module.aposta.repositories.tipo_jogo_repository import tipo_jogo_repository
+from motor_aposta.module.aposta.services.aposta_service import grava_aposta
 from motor_aposta.module.aposta.services.calculo_service import calcula_dezenas
 from motor_aposta.module.aposta.services.resultado_service import sorteio_por_id, gera_aposta, valida_resultado
 from motor_aposta.module.aposta.services.simulacao_service import gera_simulacao
@@ -130,49 +131,77 @@ def gera_jogo_v1(id: int,
 def gera_jogo_v2(id_tipo_jogo: int,
               id_usuario: int,
               qtde_aposta: int,
-              qtde_dezena_aposta: int):
+              qtde_dezena_aposta: int,
+              analisa_simulacao: bool,
+              grava_simulacao: bool = True):
+
+    def define_quantidade_moldura(qtde_dezenas_aposta: int,
+                                moldura_ini: int,
+                                moldura_fim: int
+                            ) -> tuple[int, int]:
+        moldura_ini = 10
+        moldura_fim = 11
+        if qtde_dezenas_aposta == tipo_jogo.qt_dezena_minima_aposta: # 15
+            return moldura_ini, moldura_fim #(10, 11)
+        elif (qtde_dezenas_aposta == tipo_jogo.qt_dezena_minima_aposta + 1): # 16
+            return moldura_ini, moldura_fim + 1 #(10, 12)
+        elif (qtde_dezenas_aposta == tipo_jogo.qt_dezena_minima_aposta + 2): # 17
+            return moldura_ini + 1, moldura_fim + 1 #(11, 12)
+        elif (qtde_dezenas_aposta == tipo_jogo.qt_dezena_minima_aposta + 3): #18
+            return moldura_ini + 1, moldura_fim + 2 #(11, 13)
+        elif (qtde_dezenas_aposta == tipo_jogo.qt_dezena_minima_aposta + 4): # 19
+            return moldura_ini + 2, moldura_fim + 2 #(12, 13)
+        else: # 20
+            return moldura_ini + 2, moldura_fim + 3 #(12, 14)
 
     jogos = []
-    grava_simulacao = True
+    moldura_inicial: int = 10
+    moldura_final: int = 11
+
     tipo_jogo: TipoJogoDTO
     tipo_jogo_premiacao: TipoJogoPremiacaoDTO
-
     tipo_jogo = tipo_jogo_repository.busca_tipo_jogo(id_tipo_jogo)
     tipo_jogo_premiacao = tipo_jogo_repository.busca_tipo_jogo_premiacao(id_tipo_jogo)
-
-    simulacao = simulacao_repository.busca_ultima_simulacao(id_tipo_jogo=id,
-                                                            id_usuario=id_usuario,
-                                                            nr_concurso_aposta=tipo_jogo.nr_concurso_max)
-
-    id_simulacao = (simulacao.id_simulacao if simulacao else 0)
+    moldura_inicial, moldura_final = define_quantidade_moldura(qtde_dezenas_aposta=qtde_dezena_aposta,
+                                                               moldura_ini=moldura_inicial,
+                                                               moldura_fim=moldura_final)
     for i in range(qtde_aposta):
         jogo_invalido = True
-        id_simulacao += 1
         i += 1
         while jogo_invalido:
             dezenas_moldura = DadoMolduraService.dado_moldura(id_tipo_jogo=id_tipo_jogo,
-                                                            qtde_dezenas=qtde_dezena_aposta)
+                                                            moldura_inicial=moldura_inicial,
+                                                            moldura_final=moldura_final,
+                                                            analisa_simulacao=analisa_simulacao)
 
-            dezenas_centro = DadoCentroService.dado_centro(id_tipo_jogo=id_tipo_jogo,
-                                                           qtde_moldura=len(dezenas_moldura),
-                                                           qtde_dezenas=qtde_dezena_aposta)
+            if dezenas_moldura and len(dezenas_moldura) >= 10:
+                dezenas_centro = DadoCentroService.dado_centro(id_tipo_jogo=id_tipo_jogo,
+                                                               qtde_moldura=len(dezenas_moldura),
+                                                               qtde_dezenas=qtde_dezena_aposta,
+                                                               analisa_simulacao=analisa_simulacao)
 
-            jogo = sorted(dezenas_moldura + dezenas_centro)
-
-            jogo_invalido = valida_resultado(id_tipo_jogo=id_tipo_jogo,
-                                                apostas=",".join(map(str, jogo)),
-                                                qtde_maxima_repetida_simulacao_resultado=tipo_jogo_premiacao.qt_dezena_acerto + 2,
-                                                desvio_medio=None,
-                                                sempre_amarrar_jogos=False,
-                                                id_usuario=id_usuario,
-                                                valida_desvio_medio=False
-                                                )
+                jogo = sorted(dezenas_moldura + dezenas_centro)
+                if (len(jogo) >= tipo_jogo.qt_dezena_resultado):
+                    jogo_invalido = valida_resultado(id_tipo_jogo=id_tipo_jogo,
+                                                        apostas=",".join(map(str, jogo)),
+                                                        qtde_maxima_repetida_simulacao_resultado=tipo_jogo_premiacao.qt_dezena_acerto + 2,
+                                                        desvio_medio=None,
+                                                        sempre_amarrar_jogos=False,
+                                                        id_usuario=id_usuario,
+                                                        valida_desvio_medio=False
+                                                        )
 
         if (grava_simulacao):
-            simulacao = gera_simulacao(id_tipo_jogo=id_tipo_jogo,
-                                        id_usuario=id_usuario,
-                                        jogo=",".join(map(str, jogo)))
+            grava_aposta(id_tipo_jogo=id_tipo_jogo,
+                         id_usuario=id_usuario,
+                         nr_jogo=",".join(map(str, jogo))
+                    )
+                         
+            gera_simulacao(id_tipo_jogo=id_tipo_jogo,
+                            id_usuario=id_usuario,
+                            jogo=",".join(map(str, jogo))
+                        )
 
-        jogos.append(jogo)
+        jogos.append(",".join(map(str, jogo)))
 
     return jogos

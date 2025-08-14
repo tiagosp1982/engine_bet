@@ -21,19 +21,24 @@ class DadoMolduraService():
     def __init__():
         pass
 
-    def dado_moldura(id_tipo_jogo: int, qtde_dezenas: int = 15) -> Optional[dict]:
+    def dado_moldura(id_tipo_jogo: int,
+                     moldura_inicial: int = 10,
+                     moldura_final: int = 11,
+                     analisa_simulacao: bool = False) -> Optional[dict]:
         tipo_jogo: TipoJogoDTO
         tipo_jogo_estrutura: TipoJogoEstruturaDTO
 
         tipo_jogo = tipo_jogo_repository.busca_tipo_jogo(id_tipo_jogo)
         tipo_jogo_estrutura = tipo_jogo_repository.busca_tipo_jogo_estrutura(id_tipo_jogo)
-        sorteio_moldura = sorteio_repository.busca_resultado_moldura(id_tipo_jogo)
+        sorteio_moldura = sorteio_repository.busca_resultado_moldura(id_tipo_jogo=id_tipo_jogo,
+                                                                     analisa_simulacao=analisa_simulacao,
+                                                                     nr_concurso=tipo_jogo.nr_concurso_max)
 
         # Configurações
         CONJUNTO_BASE = [t.nr_estrutura_jogo for t in tipo_jogo_estrutura if t.flg_centro_moldura == 'M']
-        TAMANHO_ENTRADA = 5
-        SORTEIO_MIN = 10 + (qtde_dezenas - tipo_jogo.qt_dezena_minima_aposta)
-        SORTEIO_MAX = 11 + (qtde_dezenas - tipo_jogo.qt_dezena_minima_aposta)
+        TAMANHO_ENTRADA = 4
+        SORTEIO_MIN = moldura_inicial
+        SORTEIO_MAX = moldura_final
         EPOCHS = 100
 
         # 1. Carregar e preparar os dados

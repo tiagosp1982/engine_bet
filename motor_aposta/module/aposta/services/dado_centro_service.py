@@ -13,13 +13,15 @@ class DadoCentroService():
     def __init__():
         pass
 
-    def dado_centro(id_tipo_jogo: int, qtde_moldura: int, qtde_dezenas: int = 15) -> dict:
+    def dado_centro(id_tipo_jogo: int, qtde_moldura: int, qtde_dezenas: int = 15, analisa_simulacao: bool = False) -> dict:
         tipo_jogo: TipoJogoDTO
         tipo_jogo_estrutura: TipoJogoEstruturaDTO
 
         tipo_jogo = tipo_jogo_repository.busca_tipo_jogo(id_tipo_jogo)
         tipo_jogo_estrutura = tipo_jogo_repository.busca_tipo_jogo_estrutura(id_tipo_jogo)
-        sorteio_centro = sorteio_repository.busca_resultado_centro(id_tipo_jogo)
+        sorteio_centro = sorteio_repository.busca_resultado_centro(id_tipo_jogo=id_tipo_jogo,
+                                                                   analisa_simulacao=True,
+                                                                   nr_concurso=tipo_jogo.nr_concurso_max)
 
         # --- CONFIGURAÇÕES ---
         CONJUNTO_FIXO = [t.nr_estrutura_jogo for t in tipo_jogo_estrutura if t.flg_centro_moldura == 'C']

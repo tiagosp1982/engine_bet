@@ -22,13 +22,13 @@ from motor_aposta.module.aposta.services.jogo_service import gera_jogo_v1, gera_
 id_tipo_jogo = 1
 id_usuario = 1
 qtde_aposta = 1
-qtde_dezena_aposta = 17
+qtde_dezena_aposta = 15
 
 jogos = gera_jogo_v2(id_tipo_jogo=id_tipo_jogo,
                     id_usuario=id_usuario,
                     qtde_aposta=qtde_aposta,
                     qtde_dezena_aposta=qtde_dezena_aposta,
-                    analisa_simulacao=False,
+                    analisa_simulacao=True,
                     grava_simulacao=True)
 
 print(jogos)

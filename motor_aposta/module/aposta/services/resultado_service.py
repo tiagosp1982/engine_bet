@@ -20,7 +20,7 @@ async def confere_resultado_detalhado(id_tipo_jogo: int, apostas: str) -> dict:
         sorteioString = str(s["dezenas"])
         sorteio = sorteioString.split(',')
         resultado = [elemento for elemento in aposta if elemento in sorteio]
-        lista_resultado.append({"Concurso": s[0], "Acertos": len(resultado)})
+        lista_resultado.append({"Concurso": s["nr_concurso"], "Acertos": len(resultado)})
     
     return lista_resultado
 
@@ -134,8 +134,16 @@ def valida_resultado(id_tipo_jogo: int,
     if (resultado):
         return True
 
+    qtde_adicional_premio_min = 0
+    if len(aposta) in (15, 16, 17):
+        qtde_adicional_premio_min = 1
+    elif len(aposta) in (18):
+        qtde_adicional_premio_min = 2
+    else:
+        qtde_adicional_premio_min = 3
+
     # Valida se np último concurso a aposta já acerto mais do que o prêmio mínimo
-    acerto_ultimo_resultado = [a for a in lista_ultimo_resultado if a == premiacao.qt_dezena_acerto + 1]
+    acerto_ultimo_resultado = [a for a in lista_ultimo_resultado if a == premiacao.qt_dezena_acerto + qtde_adicional_premio_min]
     if (len(acerto_ultimo_resultado) > 0):
         return True
     

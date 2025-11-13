@@ -1,7 +1,7 @@
 from collections import Counter
 from itertools import combinations
-lista = [1,2,3,4,5,6,10,11,15,16,20,21,22,23,24,25]
-total = list(combinations(lista,11))
+lista = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]
+total = list(combinations(lista,20))
 print(len(total))
 exit()
 

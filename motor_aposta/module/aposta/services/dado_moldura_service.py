@@ -36,7 +36,7 @@ class DadoMolduraService():
 
         # Configurações
         CONJUNTO_BASE = [t.nr_estrutura_jogo for t in tipo_jogo_estrutura if t.flg_centro_moldura == 'M']
-        TAMANHO_ENTRADA = 4
+        TAMANHO_ENTRADA = 11
         SORTEIO_MIN = moldura_inicial
         SORTEIO_MAX = moldura_final
         EPOCHS = 100

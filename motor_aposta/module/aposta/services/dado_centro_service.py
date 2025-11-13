@@ -25,7 +25,7 @@ class DadoCentroService():
 
         # --- CONFIGURAÇÕES ---
         CONJUNTO_FIXO = [t.nr_estrutura_jogo for t in tipo_jogo_estrutura if t.flg_centro_moldura == 'C']
-        JANELA = 5  # número de sorteios usados como entrada
+        JANELA = 11  # número de sorteios usados como entrada
         EPOCHS = 100
         QTDE_DEZENA_CENTRO = (tipo_jogo.qt_dezena_minima_aposta - qtde_moldura) + \
             (qtde_dezenas - tipo_jogo.qt_dezena_minima_aposta)

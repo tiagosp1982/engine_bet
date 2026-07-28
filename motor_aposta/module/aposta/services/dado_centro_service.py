@@ -1,3 +1,13 @@
+
+import warnings
+
+from typing import Optional
+from xml.parsers.expat import model
+from keras.layers import LSTM, Dense
+from keras.models import Sequential
+import random
+
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 import pandas as pd
 import numpy as np
 from tensorflow import keras
@@ -25,8 +35,8 @@ class DadoCentroService():
 
         # --- CONFIGURAÇÕES ---
         CONJUNTO_FIXO = [t.nr_estrutura_jogo for t in tipo_jogo_estrutura if t.flg_centro_moldura == 'C']
-        JANELA = 11  # número de sorteios usados como entrada
-        EPOCHS = 100
+        JANELA = 20  # número de sorteios usados como entrada
+        EPOCHS = 25
         QTDE_DEZENA_CENTRO = (tipo_jogo.qt_dezena_minima_aposta - qtde_moldura) + \
             (qtde_dezenas - tipo_jogo.qt_dezena_minima_aposta)
         LIMIAR = 0.5  # limite para considerar um número como "presente"
@@ -42,12 +52,22 @@ class DadoCentroService():
         dados_binarios = np.array([sorteio_para_binario(s, CONJUNTO_FIXO) for s in df['ds_dezenas']])
 
         # --- 3. Criar sequências de treino ---
+        # X, y = [], []
+        # for i in range(JANELA, len(dados_binarios)):
+        #     X.append(dados_binarios[i - JANELA:i])
+        #     y.append(dados_binarios[i])
+        # X = np.array(X)
+        # y = np.array(y)
         X, y = [], []
-        for i in range(JANELA, len(dados_binarios)):
-            X.append(dados_binarios[i - JANELA:i])
-            y.append(dados_binarios[i])
-        X = np.array(X)
-        y = np.array(y)
+        for i in range(len(dados_binarios) - JANELA):
+            seq = dados_binarios[i:i+random.randint(10, JANELA)]  # sequência variável
+            seq_padded = pad_sequences([seq], maxlen=JANELA, dtype='float32')
+            X.append(seq_padded[0])
+            y.append(dados_binarios[i+len(seq)])  # próximo sorteio
+        X, y = np.array(X), np.array(y)
+
+        # Ajustar formato para LSTM (batch, time_steps, features)
+        X = X.reshape(X.shape[0], JANELA, X.shape[2])
 
         # --- 4. Criar modelo LSTM ---
         modelo = Sequential()
@@ -58,12 +78,13 @@ class DadoCentroService():
         modelo.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
         # --- 5. Treinar ---
-        modelo.fit(X, y, epochs=EPOCHS, verbose=1)
+        modelo.fit(X, y, epochs=EPOCHS, verbose=0)
 
         # --- 6. Prever próximo sorteio ---
-        entrada = dados_binarios[-JANELA:]
-        entrada = entrada.reshape((1, JANELA, len(CONJUNTO_FIXO)))
-        saida = modelo.predict(entrada)[0]
+        num_entrada = random.randint(10, 20)
+        entrada = dados_binarios[-num_entrada:] 
+        entrada_padded = pad_sequences([entrada], maxlen=JANELA, dtype='float32')
+        saida = modelo.predict(entrada_padded)[0]
 
         # --- 7. Converter os últimos 25 sorteios para comparação ---
         ultimos = set(
@@ -75,15 +96,15 @@ class DadoCentroService():
             return [CONJUNTO_FIXO[i] for i, prob in enumerate(valores_prob) if prob > limiar]
 
         # Tentar vários limiares, se necessário
-        limiares_testados = [0.5, 0.45, 0.55, 0.6, 0.4]
+        # limiares_testados = [0.5, 0.45, 0.55, 0.6, 0.4]
         previsao_final = []
 
-        for limiar_teste in limiares_testados:
-            tentativa = gerar_previsao(saida, limiar_teste)
-            tentativa_binaria = sorteio_para_binario(tentativa, CONJUNTO_FIXO)
-            if tuple(tentativa_binaria) not in ultimos and len(tentativa) == QTDE_DEZENA_CENTRO:
-                previsao_final = tentativa
-                break
+        # for limiar_teste in limiares_testados:
+        #     tentativa = gerar_previsao(saida, limiar_teste)
+        #     tentativa_binaria = sorteio_para_binario(tentativa, CONJUNTO_FIXO)
+        #     if tuple(tentativa_binaria) not in ultimos and len(tentativa) == QTDE_DEZENA_CENTRO:
+        #         previsao_final = tentativa
+        #         break
 
         # Se ainda assim for repetido, forçar escolha alternativa (menos prováveis)
         if not previsao_final:
@@ -92,7 +113,7 @@ class DadoCentroService():
                 tentativa_indices = indices_ordenados[:i+4]  # mínimo de 4 números
                 tentativa = sorted([CONJUNTO_FIXO[j] for j in tentativa_indices])
                 tentativa_binaria = sorteio_para_binario(tentativa, CONJUNTO_FIXO)
-                if tuple(tentativa_binaria) not in ultimos and len(tentativa) == QTDE_DEZENA_CENTRO:
+                if tuple(tentativa_binaria) and len(tentativa) == QTDE_DEZENA_CENTRO:
                     previsao_final = tentativa
                     break
 

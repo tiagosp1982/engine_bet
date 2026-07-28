@@ -137,7 +137,7 @@ def valida_resultado(id_tipo_jogo: int,
     qtde_adicional_premio_min = 0
     if len(aposta) in (15, 16, 17):
         qtde_adicional_premio_min = 1
-    elif len(aposta) in (18):
+    elif len(aposta) == 18:
         qtde_adicional_premio_min = 2
     else:
         qtde_adicional_premio_min = 3

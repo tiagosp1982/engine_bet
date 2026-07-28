@@ -139,7 +139,7 @@ def gera_jogo_v2(id_tipo_jogo: int,
                                 moldura_ini: int,
                                 moldura_fim: int
                             ) -> tuple[int, int]:
-        moldura_ini = 10
+        moldura_ini = 8
         moldura_fim = 11
         if qtde_dezenas_aposta == tipo_jogo.qt_dezena_minima_aposta: # 15
             return moldura_ini, moldura_fim #(10, 11)
@@ -155,7 +155,7 @@ def gera_jogo_v2(id_tipo_jogo: int,
             return moldura_ini + 2, moldura_fim + 3 #(12, 14)
 
     jogos = []
-    moldura_inicial: int = 10
+    moldura_inicial: int = 8
     moldura_final: int = 11
 
     tipo_jogo: TipoJogoDTO
@@ -174,22 +174,23 @@ def gera_jogo_v2(id_tipo_jogo: int,
                                                             moldura_final=moldura_final,
                                                             analisa_simulacao=analisa_simulacao)
 
-            if dezenas_moldura and len(dezenas_moldura) >= 10:
+            if dezenas_moldura:
                 dezenas_centro = DadoCentroService.dado_centro(id_tipo_jogo=id_tipo_jogo,
                                                                qtde_moldura=len(dezenas_moldura),
                                                                qtde_dezenas=qtde_dezena_aposta,
                                                                analisa_simulacao=analisa_simulacao)
-
-                jogo = sorted(dezenas_moldura + dezenas_centro)
-                if (len(jogo) >= tipo_jogo.qt_dezena_resultado):
-                    jogo_invalido = valida_resultado(id_tipo_jogo=id_tipo_jogo,
-                                                        apostas=",".join(map(str, jogo)),
-                                                        qtde_maxima_repetida_simulacao_resultado=tipo_jogo_premiacao.qt_dezena_acerto + 2,
-                                                        desvio_medio=None,
-                                                        sempre_amarrar_jogos=False,
-                                                        id_usuario=id_usuario,
-                                                        valida_desvio_medio=False
-                                                        )
+                if (dezenas_centro):
+                    print(f"Moldura: {dezenas_moldura} - Centro: {dezenas_centro}")
+                    jogo = dezenas_moldura + dezenas_centro
+                    if (len(jogo) >= tipo_jogo.qt_dezena_resultado):
+                        jogo_invalido = valida_resultado(id_tipo_jogo=id_tipo_jogo,
+                                                            apostas=",".join(map(str, sorted(jogo))),
+                                                            qtde_maxima_repetida_simulacao_resultado=tipo_jogo_premiacao.qt_dezena_acerto + 2,
+                                                            desvio_medio=None,
+                                                            sempre_amarrar_jogos=False,
+                                                            id_usuario=id_usuario,
+                                                            valida_desvio_medio=False
+                                                            )
 
         if (grava_simulacao):
             grava_aposta(id_tipo_jogo=id_tipo_jogo,

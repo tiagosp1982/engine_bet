@@ -1,10 +1,13 @@
 import os
+from pyexpat import model
 import warnings
 
 from typing import Optional
+from xml.parsers.expat import model
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 warnings.filterwarnings("ignore")
 
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 from motor_aposta.module.aposta.dtos.tipo_jogo_dto import TipoJogoDTO
 from motor_aposta.module.aposta.repositories.sorteio_repository import sorteio_repository
 import pandas as pd
@@ -36,10 +39,10 @@ class DadoMolduraService():
 
         # Configurações
         CONJUNTO_BASE = [t.nr_estrutura_jogo for t in tipo_jogo_estrutura if t.flg_centro_moldura == 'M']
-        TAMANHO_ENTRADA = 11
+        TAMANHO_ENTRADA = 20
         SORTEIO_MIN = moldura_inicial
         SORTEIO_MAX = moldura_final
-        EPOCHS = 100
+        EPOCHS = 25
 
         # 1. Carregar e preparar os dados
         df = pd.DataFrame(sorteio_moldura)
@@ -52,23 +55,39 @@ class DadoMolduraService():
 
         X, y = [], []
         for i in range(len(dados_binarios) - TAMANHO_ENTRADA):
-            X.append(dados_binarios[i:i+TAMANHO_ENTRADA])
-            y.append(dados_binarios[i+TAMANHO_ENTRADA])
+            seq = dados_binarios[i:i+random.randint(10, TAMANHO_ENTRADA)]  # sequência variável
+            seq_padded = pad_sequences([seq], maxlen=TAMANHO_ENTRADA, dtype='float32')
+            X.append(seq_padded[0])
+            y.append(dados_binarios[i+len(seq)])  # próximo sorteio
         X, y = np.array(X), np.array(y)
+
+        # Ajustar formato para LSTM (batch, time_steps, features)
+        X = X.reshape(X.shape[0], TAMANHO_ENTRADA, X.shape[2])
 
         # 2. Criar e treinar o modelo
         model = Sequential()
         model.add(LSTM(64, input_shape=(X.shape[1], X.shape[2]), activation='relu'))
         model.add(Dense(len(CONJUNTO_BASE), activation='sigmoid'))
         model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-        model.fit(X, y, epochs=EPOCHS, verbose=1)
+        model.fit(X, y, epochs=EPOCHS, verbose=0)
 
         # 3. Prever próximo sorteio
-        entrada = np.array([dados_binarios[-TAMANHO_ENTRADA:]])
-        pred = model.predict(entrada)[0]
+        # num_entrada = random.randint(10, 20)
+        # entrada = dados_binarios[-num_entrada:]  # pega últimos sorteios
+        # entrada = entrada.reshape(1, entrada.shape[0], entrada.shape[1])  # (batch, time_steps, features)
+        # pred = model.predict(entrada)[0]
+
+# Preparar X e y com padding
+        
+
+        num_entrada = random.randint(10, 20)
+        entrada = dados_binarios[-num_entrada:] 
+        entrada_padded = pad_sequences([entrada], maxlen=TAMANHO_ENTRADA, dtype='float32')
+        pred = model.predict(entrada_padded)[0]
 
         # 4. Ordenar dezenas pela probabilidade prevista
         dezenas_ordenadas = [x for _, x in sorted(zip(pred, CONJUNTO_BASE), reverse=True)]
+
 
         # 5. Obter todos os conjuntos sorteados anteriores
         historico_sets = [set(dez) for dez in df['ds_dezenas']]
@@ -80,11 +99,10 @@ class DadoMolduraService():
                 candidato = set(dezenas_ordenadas[:tamanho])
                 if candidato not in historico_sets:
                     return sorted(candidato)
-            return None
+            return candidato
 
         resultado = gerar_conjunto_valido()
-
         # 7. Resultado
         if resultado:
-            return resultado
+            return list(resultado)
         return None
